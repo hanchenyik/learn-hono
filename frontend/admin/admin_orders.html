@@ -1,0 +1,637 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Order Management</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f6fa;
+        }
+
+        /* ================= SIDEBAR ================= */
+
+        .sidebar {
+            width: 230px;
+            height: 100vh;
+            background: #1e293b;
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+        }
+
+        .sidebar a:hover {
+            background: #334155;
+        }
+
+        .sidebar a.active {
+            background: #475569;
+        }
+
+        /* ================= MAIN ================= */
+
+        .main {
+            margin-left: 230px;
+            padding: 30px;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #1e293b;
+        }
+
+        .header p {
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        /* ================= CARDS ================= */
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h3 {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 25px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        /* ================= FILTER ================= */
+
+        .filter-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .filter-box input,
+        .filter-box select {
+            padding: 10px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+        }
+
+        .filter-box button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+        }
+
+        .filter-box button:hover {
+            background: #1d4ed8;
+        }
+
+        /* ================= TABLE ================= */
+
+        .table-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
+        }
+
+        .table-box h2 {
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        td {
+            color: #475569;
+        }
+
+        /* ================= STATUS ================= */
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .processing {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .shipped {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* ================= BUTTON ================= */
+
+        .view-btn {
+            padding: 7px 12px;
+            border: none;
+            border-radius: 5px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+        }
+
+        .view-btn:hover {
+            background: #1d4ed8;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media (max-width: 1000px) {
+
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+        }
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 180px;
+            }
+
+            .main {
+                margin-left: 180px;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <div class="sidebar">
+
+        <h2>Admin Panel</h2>
+
+        <!-- Dashboard -->
+        <a href="admin_index.html">
+            Dashboard
+        </a>
+
+        <!-- Products -->
+        <a href="#">
+            Products
+        </a>
+
+        <!-- Orders -->
+        <a href="admin_orders.html" class="active">
+            Orders
+        </a>
+
+        <!-- Payments -->
+        <a href="#">
+            Payments
+        </a>
+
+        <!-- Customers -->
+        <a href="#">
+            Customers
+        </a>
+
+        <!-- Shipping -->
+        <a href="#">
+            Shipping
+        </a>
+
+        <!-- Activity Log -->
+        <a href="#">
+            Activity Log
+        </a>
+
+        <!-- Logout -->
+        <a href="#">
+            Logout
+        </a>
+
+    </div>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <div class="main">
+
+        <!-- Header -->
+
+        <div class="header">
+
+            <h1>Order Management</h1>
+
+            <p>
+                View and manage customer orders.
+            </p>
+
+        </div>
+
+
+        <!-- ================= SUMMARY CARDS ================= -->
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>Pending Payment</h3>
+                <p>8</p>
+            </div>
+
+            <div class="card">
+                <h3>Processing</h3>
+                <p>15</p>
+            </div>
+
+            <div class="card">
+                <h3>Shipped</h3>
+                <p>20</p>
+            </div>
+
+            <div class="card">
+                <h3>Completed</h3>
+                <p>40</p>
+            </div>
+
+            <div class="card">
+                <h3>Cancelled</h3>
+                <p>3</p>
+            </div>
+
+        </div>
+
+
+        <!-- ================= FILTER ================= -->
+
+        <div class="filter-box">
+
+            <input
+                type="text"
+                placeholder="Search Order ID or Customer"
+            >
+
+            <select>
+
+                <option>
+                    All Payment Status
+                </option>
+
+                <option>
+                    Pending
+                </option>
+
+                <option>
+                    Approved
+                </option>
+
+                <option>
+                    Rejected
+                </option>
+
+            </select>
+
+
+            <select>
+
+                <option>
+                    All Order Status
+                </option>
+
+                <option>
+                    Processing
+                </option>
+
+                <option>
+                    Shipped
+                </option>
+
+                <option>
+                    Completed
+                </option>
+
+                <option>
+                    Cancelled
+                </option>
+
+            </select>
+
+
+            <button>
+                Search
+            </button>
+
+        </div>
+
+
+        <!-- ================= ORDER TABLE ================= -->
+
+        <div class="table-box">
+
+            <h2>Orders</h2>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Order ID</th>
+
+                        <th>Customer</th>
+
+                        <th>Amount</th>
+
+                        <th>Payment</th>
+
+                        <th>Shipping</th>
+
+                        <th>Order Status</th>
+
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <!-- ORDER 1 -->
+
+                    <tr>
+
+                        <td>#1001</td>
+
+                        <td>Customer A</td>
+
+                        <td>RM59.90</td>
+
+                        <td>
+
+                            <span class="status pending">
+                                Pending
+                            </span>
+
+                        </td>
+
+                        <td>
+                            Pending
+                        </td>
+
+                        <td>
+
+                            <span class="status pending">
+                                Pending
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <button class="view-btn">
+                                View
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+
+                    <!-- ORDER 2 -->
+
+                    <tr>
+
+                        <td>#1002</td>
+
+                        <td>Customer B</td>
+
+                        <td>RM89.00</td>
+
+                        <td>
+
+                            <span class="status approved">
+                                Approved
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="status shipped">
+                                Shipped
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="status shipped">
+                                Shipped
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <button class="view-btn">
+                                View
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+
+                    <!-- ORDER 3 -->
+
+                    <tr>
+
+                        <td>#1003</td>
+
+                        <td>Customer C</td>
+
+                        <td>RM35.50</td>
+
+                        <td>
+
+                            <span class="status approved">
+                                Approved
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="status processing">
+                                Preparing
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="status processing">
+                                Processing
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <button class="view-btn">
+                                View
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+
+                    <!-- ORDER 4 -->
+
+                    <tr>
+
+                        <td>#1004</td>
+
+                        <td>Customer D</td>
+
+                        <td>RM120.00</td>
+
+                        <td>
+
+                            <span class="status rejected">
+                                Rejected
+                            </span>
+
+                        </td>
+
+                        <td>
+                            Cancelled
+                        </td>
+
+                        <td>
+
+                            <span class="status cancelled">
+                                Cancelled
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <button class="view-btn">
+                                View
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
+```

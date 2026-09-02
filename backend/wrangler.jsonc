@@ -7,9 +7,9 @@
     "enabled": true
   },
   "vars": {
-    "APP_ORIGIN": "https://petitbakery-6gf.pages.dev/",
-    "CORS_ORIGIN": "https://petitbakery-6gf.pages.dev/",
-    "BETTER_AUTH_URL": "https://petitbakery-api.hanchenyik.workers.dev/",
+    "APP_ORIGIN": "https://petitbakery-6gf.pages.dev",
+    "CORS_ORIGIN": "https://petitbakery-6gf.pages.dev",
+    "BETTER_AUTH_URL": "https://petitbakery-api.hanchenyik.workers.dev/api/auth",
     "EMAIL_FROM": "PetitBakery <onboarding@resend.dev>"
   },
   "d1_databases": [

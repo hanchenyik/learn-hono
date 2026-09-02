@@ -1,0 +1,416 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Customer Management</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+            color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #1f2937;
+            padding: 25px 15px;
+        }
+
+        .sidebar h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .nav-item {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            padding: 13px 15px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #374151;
+            color: white;
+        }
+
+        .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 240px;
+            padding: 30px;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+        }
+
+        /* Summary Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .card h3 {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* Filter */
+        .filter-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-box input,
+        .filter-box select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .search {
+            width: 320px;
+        }
+
+        /* Table */
+        .table-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+        }
+
+        /* Status */
+        .status {
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .active-status {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .blocked-status {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Buttons */
+        .button {
+            padding: 7px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .view-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .block-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        @media (max-width: 900px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+        <h2>Admin Panel</h2>
+
+        <a href="admin_index.html" class="nav-item">
+            Dashboard
+        </a>
+
+        <a href="admin_products.html" class="nav-item">
+            Products
+        </a>
+
+        <a href="admin_orders.html" class="nav-item">
+            Orders
+        </a>
+
+        <a href="admin_payments.html" class="nav-item">
+            Payments
+        </a>
+
+        <a href="admin_customers.html" class="nav-item active">
+            Customers
+        </a>
+
+        <a href="admin_shipping.html" class="nav-item">
+            Shipping
+        </a>
+
+        <a href="admin_activity.html" class="nav-item">
+            Activity Log
+        </a>
+
+        <a href="#" class="nav-item">
+            Logout
+        </a>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+
+        <div class="header">
+            <h1>Customer Management</h1>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="cards">
+
+            <div class="card">
+                <h3>Total Customers</h3>
+                <p>120</p>
+            </div>
+
+            <div class="card">
+                <h3>Active Customers</h3>
+                <p>112</p>
+            </div>
+
+            <div class="card">
+                <h3>Blocked Customers</h3>
+                <p>8</p>
+            </div>
+
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-box">
+
+            <input
+                type="text"
+                class="search"
+                placeholder="Search customer name or email"
+            >
+
+            <select>
+                <option>All Status</option>
+                <option>Active</option>
+                <option>Blocked</option>
+            </select>
+
+        </div>
+
+        <!-- Customer Table -->
+        <div class="table-box">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Customer ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Orders</th>
+                        <th>Total Spent</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>#C001</td>
+                        <td>Customer A</td>
+                        <td>customerA@gmail.com</td>
+                        <td>5</td>
+                        <td>RM259.50</td>
+                        <td>
+                            <span class="status active-status">
+                                Active
+                            </span>
+                        </td>
+                        <td>
+                            <button class="button view-btn">
+                                View
+                            </button>
+
+                            <button class="button block-btn">
+                                Block
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#C002</td>
+                        <td>Customer B</td>
+                        <td>customerB@gmail.com</td>
+                        <td>8</td>
+                        <td>RM689.20</td>
+                        <td>
+                            <span class="status active-status">
+                                Active
+                            </span>
+                        </td>
+                        <td>
+                            <button class="button view-btn">
+                                View
+                            </button>
+
+                            <button class="button block-btn">
+                                Block
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#C003</td>
+                        <td>Customer C</td>
+                        <td>customerC@gmail.com</td>
+                        <td>2</td>
+                        <td>RM89.90</td>
+                        <td>
+                            <span class="status active-status">
+                                Active
+                            </span>
+                        </td>
+                        <td>
+                            <button class="button view-btn">
+                                View
+                            </button>
+
+                            <button class="button block-btn">
+                                Block
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#C004</td>
+                        <td>Customer D</td>
+                        <td>customerD@gmail.com</td>
+                        <td>0</td>
+                        <td>RM0.00</td>
+                        <td>
+                            <span class="status blocked-status">
+                                Blocked
+                            </span>
+                        </td>
+                        <td>
+                            <button class="button view-btn">
+                                View
+                            </button>
+
+                            <button class="button block-btn">
+                                Unblock
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#C005</td>
+                        <td>Customer E</td>
+                        <td>customerE@gmail.com</td>
+                        <td>10</td>
+                        <td>RM920.00</td>
+                        <td>
+                            <span class="status active-status">
+                                Active
+                            </span>
+                        </td>
+                        <td>
+                            <button class="button view-btn">
+                                View
+                            </button>
+
+                            <button class="button block-btn">
+                                Block
+                            </button>
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
+```

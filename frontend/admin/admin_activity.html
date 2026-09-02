@@ -1,0 +1,391 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Activity Log</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+            color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #1f2937;
+            padding: 25px 15px;
+        }
+
+        .sidebar h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .nav-item {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            padding: 13px 15px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #374151;
+            color: white;
+        }
+
+        .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 240px;
+            padding: 30px;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+        }
+
+        /* Summary Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .card h3 {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* Filters */
+        .filter-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-box input,
+        .filter-box select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .search {
+            width: 300px;
+        }
+
+        /* Table */
+        .table-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+        }
+
+        .status {
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        @media (max-width: 900px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+        <h2>Admin Panel</h2>
+
+        <a href="admin_index.html" class="nav-item">
+            Dashboard
+        </a>
+
+        <a href="admin_products.html" class="nav-item">
+            Products
+        </a>
+
+        <a href="admin_orders.html" class="nav-item">
+            Orders
+        </a>
+
+        <a href="admin_payments.html" class="nav-item">
+            Payments
+        </a>
+
+        <a href="admin_customers.html" class="nav-item">
+            Customers
+        </a>
+
+        <a href="admin_shipping.html" class="nav-item">
+            Shipping
+        </a>
+
+        <a href="admin_activity.html" class="nav-item active">
+            Activity Log
+        </a>
+
+        <a href="#" class="nav-item">
+            Logout
+        </a>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+
+        <div class="header">
+            <h1>Activity Log</h1>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="cards">
+
+            <div class="card">
+                <h3>Total Activities</h3>
+                <p>156</p>
+            </div>
+
+            <div class="card">
+                <h3>Successful Actions</h3>
+                <p>142</p>
+            </div>
+
+            <div class="card">
+                <h3>Security Alerts</h3>
+                <p>14</p>
+            </div>
+
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-box">
+
+            <input
+                type="text"
+                class="search"
+                placeholder="Search activity..."
+            >
+
+            <select>
+                <option>All Activity Types</option>
+                <option>Login</option>
+                <option>Product</option>
+                <option>Order</option>
+                <option>Payment</option>
+                <option>Customer</option>
+                <option>Security</option>
+            </select>
+
+            <select>
+                <option>All Status</option>
+                <option>Success</option>
+                <option>Warning</option>
+                <option>Failed</option>
+            </select>
+
+        </div>
+
+        <!-- Activity Table -->
+        <div class="table-box">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Log ID</th>
+                        <th>Admin</th>
+                        <th>Activity</th>
+                        <th>Type</th>
+                        <th>Date & Time</th>
+                        <th>IP Address</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>#L001</td>
+                        <td>Admin</td>
+                        <td>Admin logged in</td>
+                        <td>Login</td>
+                        <td>03/09/2026 10:15 AM</td>
+                        <td>192.168.1.10</td>
+                        <td>
+                            <span class="status success">
+                                Success
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#L002</td>
+                        <td>Admin</td>
+                        <td>Product P001 updated</td>
+                        <td>Product</td>
+                        <td>03/09/2026 10:25 AM</td>
+                        <td>192.168.1.10</td>
+                        <td>
+                            <span class="status success">
+                                Success
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#L003</td>
+                        <td>Admin</td>
+                        <td>Payment #P001 approved</td>
+                        <td>Payment</td>
+                        <td>03/09/2026 10:32 AM</td>
+                        <td>192.168.1.10</td>
+                        <td>
+                            <span class="status success">
+                                Success
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#L004</td>
+                        <td>Admin</td>
+                        <td>Failed login attempt</td>
+                        <td>Security</td>
+                        <td>03/09/2026 10:45 AM</td>
+                        <td>103.25.18.50</td>
+                        <td>
+                            <span class="status danger">
+                                Failed
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#L005</td>
+                        <td>Admin</td>
+                        <td>Customer C004 blocked</td>
+                        <td>Customer</td>
+                        <td>03/09/2026 11:02 AM</td>
+                        <td>192.168.1.10</td>
+                        <td>
+                            <span class="status warning">
+                                Warning
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#L006</td>
+                        <td>Admin</td>
+                        <td>Order #1002 status updated</td>
+                        <td>Order</td>
+                        <td>03/09/2026 11:20 AM</td>
+                        <td>192.168.1.10</td>
+                        <td>
+                            <span class="status info">
+                                Info
+                            </span>
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
+```

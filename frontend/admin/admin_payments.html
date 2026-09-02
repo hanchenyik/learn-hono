@@ -1,0 +1,498 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Payment Approval</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f6fa;
+        }
+
+        /* ================= SIDEBAR ================= */
+
+        .sidebar {
+            width: 230px;
+            height: 100vh;
+            background: #1e293b;
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+        }
+
+        .sidebar a:hover {
+            background: #334155;
+        }
+
+        .sidebar a.active {
+            background: #475569;
+        }
+
+        /* ================= MAIN ================= */
+
+        .main {
+            margin-left: 230px;
+            padding: 30px;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #1e293b;
+        }
+
+        .header p {
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        /* ================= SUMMARY CARDS ================= */
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h3 {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 25px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        /* ================= TABLE ================= */
+
+        .table-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
+        }
+
+        .table-box h2 {
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        td {
+            color: #475569;
+        }
+
+        /* ================= STATUS ================= */
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* ================= BUTTONS ================= */
+
+        .btn {
+            border: none;
+            padding: 7px 12px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .view-btn {
+            background: #2563eb;
+        }
+
+        .approve-btn {
+            background: #16a34a;
+        }
+
+        .reject-btn {
+            background: #dc2626;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media (max-width: 900px) {
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 180px;
+            }
+
+            .main {
+                margin-left: 180px;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <div class="sidebar">
+
+        <h2>Admin Panel</h2>
+
+        <a href="admin_index.html">
+            Dashboard
+        </a>
+
+        <a href="#">
+            Products
+        </a>
+
+        <a href="admin_orders.html">
+            Orders
+        </a>
+
+        <a href="admin_payments.html" class="active">
+            Payments
+        </a>
+
+        <a href="#">
+            Customers
+        </a>
+
+        <a href="#">
+            Shipping
+        </a>
+
+        <a href="#">
+            Activity Log
+        </a>
+
+        <a href="#">
+            Logout
+        </a>
+
+    </div>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <div class="main">
+
+        <div class="header">
+
+            <h1>Payment Approval</h1>
+
+            <p>
+                Review and approve customer payment submissions.
+            </p>
+
+        </div>
+
+
+        <!-- ================= SUMMARY ================= -->
+
+        <div class="cards">
+
+            <div class="card">
+
+                <h3>Pending Approval</h3>
+
+                <p>8</p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Approved</h3>
+
+                <p>72</p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Rejected</h3>
+
+                <p>6</p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= PAYMENT TABLE ================= -->
+
+        <div class="table-box">
+
+            <h2>Payment Submissions</h2>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Payment ID</th>
+
+                        <th>Order ID</th>
+
+                        <th>Customer</th>
+
+                        <th>Amount</th>
+
+                        <th>Payment Method</th>
+
+                        <th>Status</th>
+
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <!-- PAYMENT 1 -->
+
+                    <tr>
+
+                        <td>#P001</td>
+
+                        <td>#1001</td>
+
+                        <td>Customer A</td>
+
+                        <td>RM59.90</td>
+
+                        <td>Online Banking</td>
+
+                        <td>
+
+                            <span class="status pending">
+                                Pending
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <button class="btn view-btn">
+                                View Proof
+                            </button>
+
+                            <button class="btn approve-btn">
+                                Approve
+                            </button>
+
+                            <button class="btn reject-btn">
+                                Reject
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+
+                    <!-- PAYMENT 2 -->
+
+                    <tr>
+
+                        <td>#P002</td>
+
+                        <td>#1005</td>
+
+                        <td>Customer E</td>
+
+                        <td>RM89.00</td>
+
+                        <td>Online Banking</td>
+
+                        <td>
+
+                            <span class="status pending">
+                                Pending
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <button class="btn view-btn">
+                                View Proof
+                            </button>
+
+                            <button class="btn approve-btn">
+                                Approve
+                            </button>
+
+                            <button class="btn reject-btn">
+                                Reject
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+
+                    <!-- PAYMENT 3 -->
+
+                    <tr>
+
+                        <td>#P003</td>
+
+                        <td>#1002</td>
+
+                        <td>Customer B</td>
+
+                        <td>RM120.00</td>
+
+                        <td>Online Banking</td>
+
+                        <td>
+
+                            <span class="status approved">
+                                Approved
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <button class="btn view-btn">
+                                View Proof
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+
+                    <!-- PAYMENT 4 -->
+
+                    <tr>
+
+                        <td>#P004</td>
+
+                        <td>#1004</td>
+
+                        <td>Customer D</td>
+
+                        <td>RM35.50</td>
+
+                        <td>Online Banking</td>
+
+                        <td>
+
+                            <span class="status rejected">
+                                Rejected
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <button class="btn view-btn">
+                                View Proof
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
+```

@@ -1,0 +1,415 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Shipping Management</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+            color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #1f2937;
+            padding: 25px 15px;
+        }
+
+        .sidebar h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .nav-item {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            padding: 13px 15px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #374151;
+            color: white;
+        }
+
+        .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 240px;
+            padding: 30px;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+        }
+
+        /* Summary Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .card h3 {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* Filters */
+        .filter-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .filter-box input,
+        .filter-box select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .search {
+            width: 300px;
+        }
+
+        /* Table */
+        .table-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+        }
+
+        .status {
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .preparing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .shipped {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .delivered {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .button {
+            padding: 7px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+        }
+
+        @media (max-width: 1000px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .main {
+                margin-left: 200px;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+        <h2>Admin Panel</h2>
+
+        <a href="admin_index.html" class="nav-item">
+            Dashboard
+        </a>
+
+        <a href="admin_products.html" class="nav-item">
+            Products
+        </a>
+
+        <a href="admin_orders.html" class="nav-item">
+            Orders
+        </a>
+
+        <a href="admin_payments.html" class="nav-item">
+            Payments
+        </a>
+
+        <a href="admin_customers.html" class="nav-item">
+            Customers
+        </a>
+
+        <a href="admin_shipping.html" class="nav-item active">
+            Shipping
+        </a>
+
+        <a href="#" class="nav-item">
+            Activity Log
+        </a>
+
+        <a href="#" class="nav-item">
+            Logout
+        </a>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+
+        <div class="header">
+            <h1>Shipping Management</h1>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="cards">
+
+            <div class="card">
+                <h3>Preparing</h3>
+                <p>10</p>
+            </div>
+
+            <div class="card">
+                <h3>Shipped</h3>
+                <p>20</p>
+            </div>
+
+            <div class="card">
+                <h3>Delivered</h3>
+                <p>40</p>
+            </div>
+
+            <div class="card">
+                <h3>Cancelled</h3>
+                <p>3</p>
+            </div>
+
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-box">
+
+            <input
+                type="text"
+                class="search"
+                placeholder="Search Order ID or Customer"
+            >
+
+            <select>
+                <option>All Shipping Status</option>
+                <option>Preparing</option>
+                <option>Shipped</option>
+                <option>Delivered</option>
+                <option>Cancelled</option>
+            </select>
+
+        </div>
+
+        <!-- Shipping Table -->
+        <div class="table-box">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Shipping Address</th>
+                        <th>Courier</th>
+                        <th>Tracking Number</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>#1001</td>
+                        <td>Customer A</td>
+                        <td>Penang, Malaysia</td>
+                        <td>J&T Express</td>
+                        <td>-</td>
+                        <td>
+                            <span class="status preparing">
+                                Preparing
+                            </span>
+                        </td>
+                        <td>
+                            <button class="button">
+                                Update
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#1002</td>
+                        <td>Customer B</td>
+                        <td>Kuala Lumpur, Malaysia</td>
+                        <td>J&T Express</td>
+                        <td>JT123456789</td>
+                        <td>
+                            <span class="status shipped">
+                                Shipped
+                            </span>
+                        </td>
+                        <td>
+                            <button class="button">
+                                Update
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#1003</td>
+                        <td>Customer C</td>
+                        <td>Selangor, Malaysia</td>
+                        <td>Ninja Van</td>
+                        <td>NV987654321</td>
+                        <td>
+                            <span class="status shipped">
+                                Shipped
+                            </span>
+                        </td>
+                        <td>
+                            <button class="button">
+                                Update
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#1004</td>
+                        <td>Customer D</td>
+                        <td>Johor, Malaysia</td>
+                        <td>Pos Laju</td>
+                        <td>-</td>
+                        <td>
+                            <span class="status cancelled">
+                                Cancelled
+                            </span>
+                        </td>
+                        <td>
+                            <button class="button">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>#1005</td>
+                        <td>Customer E</td>
+                        <td>Perak, Malaysia</td>
+                        <td>DHL</td>
+                        <td>DHL456789123</td>
+                        <td>
+                            <span class="status delivered">
+                                Delivered
+                            </span>
+                        </td>
+                        <td>
+                            <button class="button">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
+```

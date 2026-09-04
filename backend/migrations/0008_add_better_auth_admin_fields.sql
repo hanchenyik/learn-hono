@@ -1,0 +1,11 @@
+ALTER TABLE "user"
+ADD COLUMN banned INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE "user"
+ADD COLUMN banReason TEXT;
+
+ALTER TABLE "user"
+ADD COLUMN banExpires INTEGER;
+
+ALTER TABLE "session"
+ADD COLUMN impersonatedBy TEXT;

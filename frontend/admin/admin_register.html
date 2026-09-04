@@ -1,9 +1,9 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Admin Register</title>
 
     <style>
@@ -17,6 +17,7 @@
         body {
             min-height: 100vh;
             background: #f1f5f9;
+
             display: flex;
             justify-content: center;
             align-items: center;
@@ -24,23 +25,30 @@
 
         .register-container {
             width: 420px;
+
             background: white;
+
             padding: 35px;
+
             border-radius: 10px;
+
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
 
         .register-header {
             text-align: center;
+
             margin-bottom: 25px;
         }
 
         .logo {
             width: 60px;
             height: 60px;
+
             margin: 0 auto 15px;
 
             background: #1e293b;
+
             color: white;
 
             border-radius: 10px;
@@ -54,12 +62,15 @@
 
         .register-header h1 {
             color: #1e293b;
+
             font-size: 26px;
+
             margin-bottom: 8px;
         }
 
         .register-header p {
             color: #64748b;
+
             font-size: 14px;
         }
 
@@ -69,21 +80,27 @@
 
         .form-group label {
             display: block;
+
             margin-bottom: 7px;
 
             color: #334155;
+
             font-size: 14px;
+
             font-weight: bold;
         }
 
         .form-group input {
             width: 100%;
+
             padding: 12px;
 
             border: 1px solid #cbd5e1;
+
             border-radius: 6px;
 
             font-size: 14px;
+
             outline: none;
         }
 
@@ -93,16 +110,21 @@
 
         .register-btn {
             width: 100%;
+
             padding: 12px;
 
             border: none;
+
             border-radius: 6px;
 
             background: #2563eb;
+
             color: white;
 
             font-size: 15px;
+
             font-weight: bold;
+
             cursor: pointer;
         }
 
@@ -110,31 +132,84 @@
             background: #1d4ed8;
         }
 
+        .register-btn:disabled {
+            background: #94a3b8;
+
+            cursor: not-allowed;
+        }
+
         .login-link {
             text-align: center;
+
             margin-top: 20px;
 
             color: #64748b;
+
             font-size: 14px;
         }
 
         .login-link a {
             color: #2563eb;
+
             font-weight: bold;
+
             text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
         }
 
         .security-notice {
             margin-top: 20px;
+
             padding: 10px;
 
             background: #f8fafc;
+
             border: 1px solid #e2e8f0;
+
             border-radius: 6px;
 
             text-align: center;
+
             color: #64748b;
+
             font-size: 12px;
+        }
+
+        .message {
+            display: none;
+
+            margin-bottom: 18px;
+
+            padding: 10px;
+
+            border-radius: 6px;
+
+            font-size: 13px;
+
+            text-align: center;
+        }
+
+        .message.error {
+            display: block;
+
+            background: #fef2f2;
+
+            border: 1px solid #fecaca;
+
+            color: #b91c1c;
+        }
+
+        .message.success {
+            display: block;
+
+            background: #f0fdf4;
+
+            border: 1px solid #bbf7d0;
+
+            color: #15803d;
         }
     </style>
 </head>
@@ -155,71 +230,349 @@
 
         </div>
 
-        <form>
+
+        <!-- Register Message -->
+
+        <div id="message" class="message"></div>
+
+
+        <!-- Register Form -->
+
+        <form id="registerForm">
 
             <div class="form-group">
-                <label for="name">Full Name</label>
+
+                <label for="name">
+                    Full Name
+                </label>
 
                 <input
                     type="text"
                     id="name"
                     placeholder="Enter full name"
                     required
+                    autocomplete="name"
                 >
+
             </div>
 
+
             <div class="form-group">
-                <label for="email">Admin Email</label>
+
+                <label for="email">
+                    Admin Email
+                </label>
 
                 <input
                     type="email"
                     id="email"
                     placeholder="Enter admin email"
                     required
+                    autocomplete="email"
                 >
+
             </div>
 
+
             <div class="form-group">
-                <label for="password">Password</label>
+
+                <label for="password">
+                    Password
+                </label>
 
                 <input
                     type="password"
                     id="password"
                     placeholder="Create password"
                     required
+                    minlength="12"
+                    autocomplete="new-password"
                 >
+
             </div>
 
+
             <div class="form-group">
-                <label for="confirm-password">Confirm Password</label>
+
+                <label for="confirm-password">
+                    Confirm Password
+                </label>
 
                 <input
                     type="password"
                     id="confirm-password"
                     placeholder="Confirm password"
                     required
+                    minlength="12"
+                    autocomplete="new-password"
                 >
+
             </div>
 
-            <button type="submit" class="register-btn">
+
+            <button
+                type="submit"
+                class="register-btn"
+                id="registerButton"
+            >
                 Register
             </button>
 
         </form>
 
+
+        <!-- Login Link -->
+
         <div class="login-link">
+
             Already have an admin account?
+
             <a href="admin_login.html">
                 Login
             </a>
+
         </div>
 
+
+        <!-- Security Notice -->
+
         <div class="security-notice">
+
             🔒 Admin accounts require authorization
+
         </div>
 
     </div>
 
+
+    <script>
+
+        // ==========================================
+        // Better Auth API
+        // ==========================================
+
+        const API_URL =
+            "http://localhost:8787/";
+
+
+        // ==========================================
+        // Get HTML Elements
+        // ==========================================
+
+        const registerForm =
+            document.getElementById("registerForm");
+
+        const registerButton =
+            document.getElementById("registerButton");
+
+        const message =
+            document.getElementById("message");
+
+
+        // ==========================================
+        // Show Message
+        // ==========================================
+
+        function showMessage(text, type) {
+
+            message.textContent = text;
+
+            message.className =
+                "message " + type;
+
+        }
+
+
+        // ==========================================
+        // Register
+        // ==========================================
+
+        registerForm.addEventListener(
+            "submit",
+            async function(event) {
+
+                event.preventDefault();
+
+
+                // Get form values
+
+                const name =
+                    document.getElementById("name")
+                    .value
+                    .trim();
+
+
+                const email =
+                    document.getElementById("email")
+                    .value
+                    .trim();
+
+
+                const password =
+                    document.getElementById("password")
+                    .value;
+
+
+                const confirmPassword =
+                    document.getElementById("confirm-password")
+                    .value;
+
+
+                // ==================================
+                // Check Password
+                // ==================================
+
+                if (password.length < 12) {
+
+                    showMessage(
+                        "Password must be at least 12 characters.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                // ==================================
+                // Check Confirm Password
+                // ==================================
+
+                if (password !== confirmPassword) {
+
+                    showMessage(
+                        "Passwords do not match.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                // ==================================
+                // Disable Button
+                // ==================================
+
+                registerButton.disabled = true;
+
+                registerButton.textContent =
+                    "Registering...";
+
+
+                try {
+
+                    // ==================================
+                    // Send Registration Request
+                    // ==================================
+
+                    const response =
+                        await fetch(
+                            `${API_URL}/api/auth/sign-up/email`,
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                credentials: "include",
+
+                                body: JSON.stringify({
+                                    name: name,
+                                    email: email,
+                                    password: password
+                                })
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    // ==================================
+                    // Registration Failed
+                    // ==================================
+
+                    if (!response.ok) {
+
+                        console.error(
+                            "Registration error:",
+                            data
+                        );
+
+
+                        showMessage(
+                            data.message ||
+                            data.error ||
+                            "Registration failed. Please try again.",
+                            "error"
+                        );
+
+
+                        registerButton.disabled = false;
+
+                        registerButton.textContent =
+                            "Register";
+
+                        return;
+                    }
+
+
+                    // ==================================
+                    // Registration Successful
+                    // ==================================
+
+                    showMessage(
+                        "Registration successful. Please verify your email before logging in.",
+                        "success"
+                    );
+
+
+                    registerButton.textContent =
+                        "Registered";
+
+
+                    // ==================================
+                    // Redirect to Login
+                    // ==================================
+
+                    setTimeout(
+                        function() {
+
+                            window.location.href =
+                                "admin_login.html";
+
+                        },
+                        2000
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Connection error:",
+                        error
+                    );
+
+
+                    showMessage(
+                        "Unable to connect to the server. Please try again.",
+                        "error"
+                    );
+
+
+                    registerButton.disabled = false;
+
+                    registerButton.textContent =
+                        "Register";
+
+                }
+
+            }
+        );
+
+    </script>
+
 </body>
 </html>
-```

@@ -63,17 +63,17 @@ revoke all on function public.checkout_order(uuid,text,jsonb,jsonb) from public,
 grant execute on function public.checkout_order(uuid,text,jsonb,jsonb) to service_role;
 
 insert into public.products (id,slug,name,description,category,price_cents,stock,image_url) values
-('prod_strawberry_cloud','strawberry-cloud','Strawberry Cloud Cake','Vanilla sponge, whipped cream and bright strawberries for a soft little celebration.','Cakes',14800,12,'https://images.unsplash.com/photo-1571115177098-24ec42ed204d?auto=format&fit=crop&w=1200&q=85'),
-('prod_chocolate_fudge','chocolate-fudge','Midnight Fudge Cake','A rich chocolate crumb with silky ganache and a gentle sea-salt finish.','Cakes',16800,9,'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200&q=85'),
-('prod_lemon_tart','lemon-tart','Lemon Meringue Tart','Buttery shortcrust, sharp lemon curd and toasted meringue.','Cakes',12800,8,'https://images.unsplash.com/photo-1519915028121-7d3463d20b13?auto=format&fit=crop&w=1200&q=85'),
-('prod_butter_croissant','butter-croissant','Butter Croissant','Flaky, golden layers made with cultured butter.','Pastries',900,30,'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=1200&q=85'),
-('prod_strawberry_danish','strawberry-danish','Strawberry Danish','Laminated pastry, vanilla cream and strawberry.','Pastries',1200,22,'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=1200&q=85'),
-('prod_cinnamon_roll','cinnamon-roll','Cinnamon Morning Roll','Soft spiral dough with brown sugar and cinnamon.','Pastries',1100,24,'https://images.unsplash.com/photo-1509365465985-25d11c17e812?auto=format&fit=crop&w=1200&q=85'),
-('prod_sea_salt_cookie','sea-salt-cookie','Sea Salt Chocolate Cookie','Crisp edges and dark chocolate puddles.','Cookies',850,40,'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=1200&q=85'),
-('prod_brown_butter_cookie','brown-butter-cookie','Brown Butter Cookie','Toasty brown butter and roasted pecans.','Cookies',850,35,'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=1200&q=85'),
-('prod_pistachio_cookie','pistachio-cookie','Pistachio Shortbread','Tender shortbread with roasted pistachio.','Cookies',950,28,'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=1200&q=85'),
-('prod_truffle_box','truffle-box','Petit Truffle Box','Six glossy chocolate truffles.','Chocolates',2200,18,'https://images.unsplash.com/photo-1548907040-4d42e42f4b80?auto=format&fit=crop&w=1200&q=85'),
-('prod_dark_bark','dark-bark','Almond Dark Bark','Dark chocolate with toasted almonds.','Chocolates',1800,16,'https://images.unsplash.com/photo-1575377427642-087cf684f04d?auto=format&fit=crop&w=1200&q=85'),
-('prod_caramel_bonbon','caramel-bonbon','Salted Caramel Bonbons','Milk chocolate shells with salted caramel.','Chocolates',2400,14,'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200&q=85');
+('prod_strawberry_cloud','strawberry-cloud','Strawberry Cloud Cake','Vanilla sponge, whipped cream and bright strawberries for a soft little celebration.','Cakes',14800,12,'/assets/images/products/strawberry-cloud.png'),
+('prod_chocolate_fudge','chocolate-fudge','Midnight Fudge Cake','A rich chocolate crumb with silky ganache and a gentle sea-salt finish.','Cakes',16800,9,'/assets/images/products/chocolate-fudge.png'),
+('prod_lemon_tart','lemon-tart','Lemon Meringue Tart','Buttery shortcrust, sharp lemon curd and toasted meringue.','Cakes',12800,8,'/assets/images/products/lemon-tart.png'),
+('prod_butter_croissant','butter-croissant','Butter Croissant','Flaky, golden layers made with cultured butter.','Pastries',900,30,'/assets/images/products/butter-croissant.png'),
+('prod_strawberry_danish','strawberry-danish','Strawberry Danish','Laminated pastry, vanilla cream and strawberry.','Pastries',1200,22,'/assets/images/products/strawberry-danish.png'),
+('prod_cinnamon_roll','cinnamon-roll','Cinnamon Morning Roll','Soft spiral dough with brown sugar and cinnamon.','Pastries',1100,24,'/assets/images/products/cinnamon-roll.png'),
+('prod_sea_salt_cookie','sea-salt-cookie','Sea Salt Chocolate Cookie','Crisp edges and dark chocolate puddles.','Cookies',850,40,'/assets/images/products/sea-salt-cookie.png'),
+('prod_brown_butter_cookie','brown-butter-cookie','Brown Butter Cookie','Toasty brown butter and roasted pecans.','Cookies',850,35,'/assets/images/products/brown-butter-cookie.png'),
+('prod_pistachio_cookie','pistachio-cookie','Pistachio Shortbread','Tender shortbread with roasted pistachio.','Cookies',950,28,'/assets/images/products/pistachio-cookie.png'),
+('prod_truffle_box','truffle-box','Petit Truffle Box','Six glossy chocolate truffles.','Chocolates',2200,18,'/assets/images/products/truffle-box.png'),
+('prod_dark_bark','dark-bark','Almond Dark Bark','Dark chocolate with toasted almonds.','Chocolates',1800,16,'/assets/images/products/dark-bark.png'),
+('prod_caramel_bonbon','caramel-bonbon','Salted Caramel Bonbons','Milk chocolate shells with salted caramel.','Chocolates',2400,14,'/assets/images/products/caramel-bonbon.png');
 
 -- Promote an account only after it has signed up: update public.profiles set role = 'admin' where email = 'admin@example.com';

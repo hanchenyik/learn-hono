@@ -30,6 +30,13 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      APP_ORIGIN: ${{ secrets.APP_ORIGIN }}
+      CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      SUPABASE_JWKS_URL: ${{ secrets.SUPABASE_JWKS_URL }}
+      POSTGRESQL_DB_PASSWORD: ${{ secrets.POSTGRESQL_DB_PASSWORD }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v7
@@ -38,15 +45,13 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci --prefix backend
-      - name: Validate Supabase deployment secrets
-        run: test -n "$SUPABASE_URL" && test -n "$SUPABASE_SECRET_KEY" && test -n "$SUPABASE_DB_URL"
+      - name: Validate repository configuration
+        run: test -n "$APP_ORIGIN" && test -n "$CORS_ORIGIN" && test -n "$SUPABASE_URL" && test -n "$SUPABASE_PUBLISHABLE_KEY" && test -n "$SUPABASE_SECRET_KEY" && test -n "$SUPABASE_JWKS_URL" && test -n "$POSTGRESQL_DB_PASSWORD" && test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+      - name: Apply Supabase migrations
+        run: node -e "const u=new URL(process.env.SUPABASE_URL);const ref=u.hostname.split('.')[0];const db='postgresql://postgres:'+encodeURIComponent(process.env.POSTGRESQL_DB_PASSWORD)+'@db.'+ref+'.supabase.co:5432/postgres';require('child_process').execFileSync('npx',['supabase','db','push','--db-url',db],{stdio:'inherit'})"
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-      - run: npx supabase db push --db-url "$SUPABASE_DB_URL"
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          POSTGRESQL_DB_PASSWORD: ${{ secrets.POSTGRESQL_DB_PASSWORD }}
       - run: printf '%s' "$SUPABASE_URL" | npx wrangler secret put SUPABASE_URL
         working-directory: backend
         env:

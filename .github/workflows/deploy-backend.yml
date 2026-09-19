@@ -38,19 +38,21 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci --prefix backend
-      - name: Validate runtime secrets
-        run: test -n "$BETTER_AUTH_SECRET" && test -n "$RESEND_API_KEY"
+      - name: Validate Supabase deployment secrets
+        run: test -n "$SUPABASE_URL" && test -n "$SUPABASE_SECRET_KEY" && test -n "$SUPABASE_DB_URL"
         env:
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      - run: node scripts/migration-preflight.mjs
-      - run: printf '%s' "$BETTER_AUTH_SECRET" | npx wrangler secret put BETTER_AUTH_SECRET
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      - run: npx supabase db push --db-url "$SUPABASE_DB_URL"
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      - run: printf '%s' "$SUPABASE_URL" | npx wrangler secret put SUPABASE_URL
         working-directory: backend
         env:
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-      - run: printf '%s' "$RESEND_API_KEY" | npx wrangler secret put RESEND_API_KEY
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      - run: printf '%s' "$SUPABASE_SECRET_KEY" | npx wrangler secret put SUPABASE_SECRET_KEY
         working-directory: backend
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      - run: npm run db:migrate:remote --prefix backend
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
       - run: npm run deploy --prefix backend

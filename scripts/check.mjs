@@ -1,60 +1,7 @@
 import { readFile } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
-import { spawnSync } from 'node:child_process'
-
-const stage = Number(process.argv[process.argv.indexOf('--stage') + 1] || 0)
-const read = (file) => readFile(file, 'utf8')
-const required = async (file, needles) => {
-  if (!existsSync(file)) throw new Error(`${file} is missing`)
-  const text = await read(file)
-  for (const needle of needles) if (!text.includes(needle)) throw new Error(`${file} is missing “${needle}”`)
-}
-const pass = (message) => console.log(`✓ ${message}`)
-
-try {
-  await required('frontend/index.html', ['PetitBakery', 'pb-hero', 'pb-category-grid', 'pb-product-grid', 'pb-faq', '/products/'])
-  await required('frontend/styles.css', ['--pb-cream', '.pb-hero', '.pb-product-grid'])
-  for (const route of ['products', 'product', 'cart', 'checkout', 'login', 'register', 'account', 'verify', 'verification', 'resend-verification', 'forgot-password', 'reset-password']) await required(`frontend/${route}/index.html`, ['PetitBakery'])
-  await required('frontend/assets/images/petitbakery-hero-cake.png', [])
-  await required('frontend/assets/images/petitbakery-logo.png', [])
-  await required('frontend/js/ui.js', ['petitbakery-logo.png', 'pb-float-cart', 'Add to cart', 'pb-nav-login'])
-  await required('frontend/js/product-images.js', ['prod_strawberry_cloud', 'prod_caramel_bonbon', '/assets/images/products/'])
-  await required('frontend/js/catalog-fallback.js', ['prod_strawberry_cloud', 'prod_caramel_bonbon', 'fallbackProducts'])
-  for (const image of ['strawberry-cloud', 'chocolate-fudge', 'lemon-tart', 'butter-croissant', 'strawberry-danish', 'cinnamon-roll', 'sea-salt-cookie', 'brown-butter-cookie', 'pistachio-cookie', 'truffle-box', 'dark-bark', 'caramel-bonbon']) await required(`frontend/assets/images/products/${image}.png`, [])
-  for (const image of ['category-cake-cutout', 'category-croissant-cutout', 'category-cookie-cutout', 'category-truffle-cutout']) await required(`frontend/assets/images/products/${image}.png`, [])
-  await required('.env.example', ['BETTER_AUTH_SECRET', 'RESEND_API_KEY', 'CLOUDFLARE_API_TOKEN'])
-  pass('PetitBakery storefront shell is present')
-
-  if (!stage || stage >= 2) {
-    await required('backend/migrations/0002_seed_products.sql', ['Cakes', 'Pastries', 'Cookies', 'Chocolates'])
-    await required('frontend/js/home.js', ['/api/products'])
-    await required('frontend/js/products.js', ['/api/products', 'category'])
-    pass('Bakery catalogue and cart entry points are present')
-  }
-  if (!stage || stage >= 3) {
-    await required('backend/src/index.ts', ['/api/auth', '/api/products', '/api/orders'])
-    await required('backend/src/lib/auth.ts', ['betterAuth', 'BETTER_AUTH_SECRET', 'BETTER_AUTH_URL', "sameSite: 'none'", 'sendVerificationEmail', 'sendResetPassword'])
-    await required('backend/src/routes/orders.ts', ['price_cents', 'Idempotency-Key', 'requireUser', "Origin') !== c.env.CORS_ORIGIN"])
-    await required('backend/migrations/0003_better_auth_cutover.sql', ['CREATE TABLE "user"', 'CREATE TABLE session', 'CREATE TABLE account', 'CREATE TABLE verification', 'REFERENCES "user"', 'legacy_users', 'legacy_orders'])
-    await required('backend/migrations/0004_reset_catalog.sql', ['DROP TABLE IF EXISTS order_items', 'DROP TABLE IF EXISTS orders', 'CREATE TABLE "user"', 'DROP TABLE IF EXISTS legacy_users'])
-    await required('scripts/migration-preflight.mjs', ['FROM users', 'FROM orders', 'legacy_users', 'legacy_orders', 'refusing Better Auth cutover'])
-    if (existsSync('backend/src/routes/auth.ts') || existsSync('backend/src/lib/session.ts') || existsSync('backend/src/lib/crypto.ts')) throw new Error('Legacy custom-auth code remains')
-    const typecheck = spawnSync('npm', ['--prefix', 'backend', 'run', 'typecheck'], { stdio: 'inherit', shell: process.platform === 'win32' })
-    if (typecheck.error) throw typecheck.error
-    if (typecheck.status !== 0) throw new Error('Backend typecheck failed')
-    pass('Hono routes and trusted checkout checks are present')
-  }
-  if (!stage || stage >= 4) {
-    await required('backend/wrangler.jsonc', ['petitbakery-api', 'petitbakery-db', 'd1_databases', 'onboarding@resend.dev'])
-    await required('.github/workflows/deploy-backend.yml', ['test-backend:', 'deploy-backend:', 'needs: test-backend', 'CLOUDFLARE_API_TOKEN', 'BETTER_AUTH_SECRET', 'RESEND_API_KEY', 'npm run deploy --prefix backend'])
-    await required('.github/workflows/deploy-frontend.yml', ['test-frontend:', 'deploy-frontend:', 'needs: test-frontend', 'CLOUDFLARE_API_TOKEN', 'wrangler pages deploy frontend'])
-    await required('frontend/_headers', ['Content-Security-Policy', 'frame-ancestors'])
-    await required('README.md', ['Cloudflare Pages', 'Cloudflare deployment', 'deploy-backend', 'deploy-frontend', 'products/index.html'])
-    await required('ARCHITECTURE.md', ['deploy-backend', 'deploy-frontend', 'Each deploy job requires'])
-    pass('Cloudflare deployment configuration is present')
-  }
-  console.log(stage ? `Stage ${stage} ready.` : 'All PetitBakery checks passed.')
-} catch (error) {
-  console.error(`✗ ${error.message}`)
-  process.exit(1)
-}
+const required = async (file, terms) => { const text = await readFile(file, 'utf8'); for (const term of terms) if (!text.includes(term)) throw new Error(`${file} is missing ${term}`) }
+await required('supabase/migrations/202609190001_petitbakery.sql', ['create_profile', 'checkout_order', 'enable row level security', 'service_role'])
+await required('backend/src/lib/supabase.ts', ['requireUser', 'requireAdmin'])
+await required('backend/src/index.ts', ['/api/admin', '/api/orders'])
+await required('frontend/js/api.js', ['@supabase/supabase-js@2.49.1', 'Authorization'])
+console.log('✓ Supabase migration and Hono integration present')

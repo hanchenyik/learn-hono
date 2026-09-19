@@ -46,7 +46,7 @@ For a teaching app, local cart state:
 
 - works before registration,
 - avoids unnecessary writes,
-- reduces D1 free-tier usage,
+- keeps Supabase usage comfortably within the demo tier,
 - keeps backend authority at checkout because price is recalculated from product IDs.
 
 A later lesson can add an authenticated server cart and cart merge after login.

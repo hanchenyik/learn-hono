@@ -9,14 +9,6 @@
   "vars": {
     "APP_ORIGIN": "https://petitbakery-6gf.pages.dev",
     "CORS_ORIGIN": "https://petitbakery-6gf.pages.dev",
-    "BETTER_AUTH_URL": "https://petitbakery-api.hanchenyik.workers.dev/api/auth",
-    "EMAIL_FROM": "PetitBakery <onboarding@resend.dev>"
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "petitbakery-db",
-      "database_id": "e542652e-4bf5-4fed-a310-e6869e03f89b"
-    }
-  ]
+    "SUPABASE_URL": "https://YOUR_PROJECT.supabase.co"
+  }
 }

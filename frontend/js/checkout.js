@@ -59,7 +59,7 @@ async function init() {
         <div class="rounded-3xl border border-emerald-200 bg-emerald-50 p-8 text-center">
           <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-600 text-2xl text-white">✓</div>
           <h2 class="mt-5 text-3xl font-black text-slate-950">Order confirmed</h2>
-          <p class="mt-2 text-slate-600">Dummy checkout complete. No payment was processed.</p>
+          <p class="mt-2 text-slate-600">Demo payment complete. No card or bank details were collected.</p>
           <p class="mt-3 text-sm font-mono text-slate-500">Order ${escapeHtml(data.orderId)}</p>
           <a href="/account/" class="mt-6 inline-block rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white">View orders</a>
         </div>`

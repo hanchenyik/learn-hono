@@ -9,7 +9,7 @@ export async function api(path, options = {}) {
   if (options.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
   let response; try { response = await fetch(`${API_BASE}${path}`, { ...options, headers }) } catch (error) { const fallback = localFallback(path); if (fallback && (!options.method || options.method === 'GET')) return fallback; throw error }
   let data = null; try { data = await response.json() } catch {}
-  if (!response.ok) { const error = new Error(data?.message || data?.error || `Request failed (${response.status})`); error.status = response.status; throw error }
+  if (!response.ok) { const fallback = localFallback(path); if (fallback && (!options.method || options.method === 'GET')) return fallback; const error = new Error(data?.message || data?.error || `Request failed (${response.status})`); error.status = response.status; throw error }
   return data
 }
-export async function getCurrentUser() { const { data: { user } } = await supabase.auth.getUser(); return user ? { id: user.id, email: user.email, displayName: user.user_metadata?.full_name || user.email } : null }
+export async function getCurrentUser() { try { const { data: { user } } = await supabase.auth.getUser(); return user ? { id: user.id, email: user.email, displayName: user.user_metadata?.full_name || user.email } : null } catch { return null } }

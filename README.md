@@ -4,11 +4,50 @@ PetitBakery is a Cloudflare Pages storefront with Supabase Auth/Postgres and a H
 
 ## Setup
 
-1. Create a Supabase project and configure its Auth redirect URLs for `http://localhost:8788/verify/`, `http://localhost:8788/reset-password/`, `https://petitbakery.pages.dev/verify/`, and `https://petitbakery.pages.dev/reset-password/`. Signup and password-reset redirects must be on this allowlist ([Supabase redirect URL guide](https://supabase.com/docs/guides/auth/redirect-urls)).
-2. Copy `.env.example` to `.env` and fill every value. Do not commit it. For a manual migration, use the Supabase connection string and percent-encode special characters in its password: `npx supabase db push --db-url "postgresql://postgres:ENCODED_PASSWORD@db.PROJECT_REF.supabase.co:5432/postgres"`.
-3. Apply the fresh schema and seed with that command.
-4. Put `SUPABASE_URL` and `SUPABASE_SECRET_KEY` in the Worker secret store. The production storefront is `https://petitbakery.pages.dev` and its API is `https://petitbakery-api.velozz.workers.dev`; the deployment workflow writes the browser-safe URL and publishable key configuration.
-5. On macOS or Windows, install Node 22, run `npm ci --prefix backend`, then `npm start`. This starts the Hono API at `http://localhost:8787` and the static storefront at `http://localhost:8788`; press Ctrl+C to stop both. Run `npm run typecheck --prefix backend` before committing.
+1. Create a Supabase project.
+2. Add these Auth redirect URLs: `http://localhost:8788/verify/`, `http://localhost:8788/reset-password/`, `https://petitbakery.pages.dev/verify/`, and `https://petitbakery.pages.dev/reset-password/`. Signup and password-reset redirects must be on this allowlist ([Supabase redirect URL guide](https://supabase.com/docs/guides/auth/redirect-urls)).
+3. Copy `.env.example` to `.env` and fill in the values. Do not commit `.env`. The browser config at `frontend/js/config.js` also needs the `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` values; never put `SUPABASE_SECRET_KEY` there.
+4. Apply the schema and seed products with the Supabase CLI. Use the database connection string and percent-encode special characters in its password: `npx supabase db push --db-url "postgresql://postgres:ENCODED_PASSWORD@db.PROJECT_REF.supabase.co:5432/postgres"`.
+5. Put `SUPABASE_URL` and `SUPABASE_SECRET_KEY` in the Worker secret store. The production storefront is `https://petitbakery.pages.dev` and its API is `https://petitbakery-api.velozz.workers.dev`; the deployment workflow writes the browser-safe URL and publishable key configuration.
+
+## Local development commands
+
+Run these from the repository root with Node 22 installed:
+
+Create `.env` once with `cp .env.example .env` (PowerShell: `Copy-Item .env.example .env`), then fill its values. For local use, set `APP_ORIGIN` and `CORS_ORIGIN` to `http://localhost:8788`. Copy `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` into `frontend/js/config.js` for browser auth; keep the secret key out of frontend files. The local Worker uses the Supabase project in `.env`, so use a dedicated development project for signup, checkout, or admin changes.
+
+1. Install the backend dependencies:
+
+   ```sh
+   npm ci --prefix backend
+   ```
+
+2. Start the local API and storefront together:
+
+   ```sh
+   npm start
+   ```
+
+   Open `http://localhost:8788/`; the API runs at `http://localhost:8787/`. Stop both with Ctrl+C.
+3. Typecheck the backend:
+
+   ```sh
+   npm run typecheck --prefix backend
+   ```
+
+4. Check browser JavaScript syntax on macOS/Linux:
+
+   ```sh
+   for file in frontend/js/*.js; do node --check "$file"; done
+   ```
+
+   In PowerShell:
+
+   ```powershell
+   Get-ChildItem frontend/js/*.js | ForEach-Object { node --check $_.FullName; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE } }
+   ```
+
+To run either server separately, use `npm run dev --prefix backend` for the API or `node scripts/serve-frontend.mjs` for the storefront. Use these instead of `npm start` when you only need one server.
 
 GitHub Actions expects every `.env` name as a repository secret: `APP_ORIGIN`, `CORS_ORIGIN`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_JWKS_URL`, and `POSTGRESQL_DB_PASSWORD`. Also set `SUPABASE_DB_POOLER_HOST` to the hostname from Supabase Dashboard → Connect → Session pooler; GitHub-hosted runners need this IPv4-compatible endpoint for migrations. Pull requests only run checks; pushes to `main` and manual dispatches deploy production.
 

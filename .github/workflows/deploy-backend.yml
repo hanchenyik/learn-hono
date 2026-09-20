@@ -1,4 +1,4 @@
-name: Verify and deploy PetitBakery
+name: Verify and deploy PetitBakery backend
 
 on:
   pull_request:
@@ -25,7 +25,7 @@ jobs:
       - run: npm run check
 
   deploy-production:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: check
     runs-on: ubuntu-latest
     env:
@@ -50,28 +50,17 @@ jobs:
         run: test -n "$APP_ORIGIN" && test -n "$CORS_ORIGIN" && test -n "$SUPABASE_URL" && test -n "$SUPABASE_PUBLISHABLE_KEY" && test -n "$SUPABASE_SECRET_KEY" && test -n "$SUPABASE_JWKS_URL" && test -n "$POSTGRESQL_DB_PASSWORD" && test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
       - name: Apply Supabase migrations
         run: node -e "const u=new URL(process.env.SUPABASE_URL);const ref=u.hostname.split('.')[0];const db='postgresql://postgres:'+encodeURIComponent(process.env.POSTGRESQL_DB_PASSWORD)+'@db.'+ref+'.supabase.co:5432/postgres';require('child_process').execFileSync('npx',['supabase','db','push','--db-url',db],{stdio:'inherit'})"
-      - name: Create or update the Worker
+      - name: Create Worker
         run: npm run deploy --prefix backend
       - name: Upload Worker secrets
+        working-directory: backend
         run: |
-          printf '%s' "$SUPABASE_URL" | npm exec --prefix backend -- wrangler secret put SUPABASE_URL
-          printf '%s' "$SUPABASE_SECRET_KEY" | npm exec --prefix backend -- wrangler secret put SUPABASE_SECRET_KEY
-      - name: Deploy Worker with production secrets
+          npx wrangler secret put SUPABASE_URL <<< "$SUPABASE_URL"
+          npx wrangler secret put SUPABASE_SECRET_KEY <<< "$SUPABASE_SECRET_KEY"
+      - name: Deploy Worker with secrets
         run: npm run deploy --prefix backend
-      - name: Write browser-safe configuration
-        run: node -e "const fs=require('fs');fs.writeFileSync('frontend/js/config.js','window.APP_CONFIG='+JSON.stringify({API_BASE:'https://petitbakery-api.velozz.workers.dev',SUPABASE_URL:process.env.SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY:process.env.SUPABASE_PUBLISHABLE_KEY})+';\\n')"
-      - name: Create the Pages project when needed
-        run: |
-          npm exec --prefix backend -- wrangler pages project list --json > /tmp/pages-projects.json
-          if [ "$(node -e "const projects=JSON.parse(require('fs').readFileSync(process.argv[1]));if(!Array.isArray(projects))throw Error('Unexpected Pages response');process.stdout.write(projects.some(project=>project.name==='petitbakery')?'exists':'missing')" /tmp/pages-projects.json)" = missing ]; then
-            npm exec --prefix backend -- wrangler pages project create petitbakery --production-branch main
-          fi
-      - name: Deploy Pages
-        run: npm exec --prefix backend -- wrangler pages deploy frontend --project-name petitbakery --branch main
-      - name: Smoke test production
+      - name: Smoke test Worker and CORS
         run: |
           curl --fail --silent --show-error https://petitbakery-api.velozz.workers.dev/health
           curl --fail --silent --show-error -D /tmp/petitbakery-cors -o /dev/null -X OPTIONS https://petitbakery-api.velozz.workers.dev/api/products -H 'Origin: https://petitbakery.pages.dev' -H 'Access-Control-Request-Method: GET'
           grep -qi '^access-control-allow-origin: https://petitbakery.pages.dev' /tmp/petitbakery-cors
-          curl --fail --silent --show-error https://petitbakery.pages.dev/ > /dev/null
-          curl --fail --silent --show-error https://petitbakery.pages.dev/js/config.js | grep -F 'https://petitbakery-api.velozz.workers.dev'

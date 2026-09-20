@@ -1,0 +1,55 @@
+name: Verify and deploy PetitBakery frontend
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm run check:stage2
+
+  deploy-production:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --prefix backend
+      - name: Validate production secrets
+        run: test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$SUPABASE_URL" && test -n "$SUPABASE_PUBLISHABLE_KEY"
+      - name: Write browser-safe configuration
+        run: node -e "const fs=require('fs');fs.writeFileSync('frontend/js/config.js','window.APP_CONFIG='+JSON.stringify({API_BASE:'https://petitbakery-api.velozz.workers.dev',SUPABASE_URL:process.env.SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY:process.env.SUPABASE_PUBLISHABLE_KEY})+';\\n')"
+      - name: Create Pages project when needed
+        run: |
+          npm exec --prefix backend -- wrangler pages project list --json > /tmp/pages-projects.json
+          if [ "$(node -e "const projects=JSON.parse(require('fs').readFileSync(process.argv[1]));if(!Array.isArray(projects))throw Error('Unexpected Pages response');process.stdout.write(projects.some(project=>project['Project Name']==='petitbakery')?'exists':'missing')" /tmp/pages-projects.json)" = missing ]; then
+            npm exec --prefix backend -- wrangler pages project create petitbakery --production-branch main
+          fi
+      - name: Deploy Pages
+        run: npm exec --prefix backend -- wrangler pages deploy frontend --project-name petitbakery --branch main
+      - name: Smoke test Pages and API configuration
+        run: |
+          curl --fail --silent --show-error https://petitbakery.pages.dev/ > /dev/null
+          curl --fail --silent --show-error https://petitbakery.pages.dev/js/config.js | grep -F 'https://petitbakery-api.velozz.workers.dev'

@@ -63,14 +63,25 @@ async function init() {
 
     try {
       let error
+      let signedInUser
       if (state === 'signup') ({ error } = await supabase.auth.signUp({ email: data.email, password: data.password, options: { data: { full_name: data.full_name }, emailRedirectTo } }))
       else if (state === 'forgot') ({ error } = await supabase.auth.resetPasswordForEmail(data.email, { redirectTo: `${location.origin}/reset-password/` }))
       else if (state === 'resend') ({ error } = await supabase.auth.resend({ type: 'signup', email: data.email, options: { emailRedirectTo } }))
       else if (state === 'reset') ({ error } = await supabase.auth.updateUser({ password: data.password }))
-      else ({ error } = await supabase.auth.signInWithPassword({ email: data.email, password: data.password }))
+      else {
+        const signIn = await supabase.auth.signInWithPassword({ email: data.email, password: data.password })
+        error = signIn.error
+        signedInUser = signIn.data.user
+      }
 
       if (error) throw error
-      location.href = state === 'signin' ? next : state === 'reset' ? '/auth/login/' : state === 'forgot' ? '/auth/verification/?flow=recovery' : '/auth/verification/'
+      if (state === 'signin') {
+        const { data: profile, error: profileError } = await supabase.from('profiles').select('role').eq('id', signedInUser.id).maybeSingle()
+        if (profileError) throw profileError
+        location.href = profile?.role === 'admin' ? (next.startsWith('/admin/') ? next : '/admin/') : next
+      } else {
+        location.href = state === 'reset' ? '/auth/login/' : state === 'forgot' ? '/auth/verification/?flow=recovery' : '/auth/verification/'
+      }
     } catch (error) {
       toast(error.message, 'error')
     } finally {

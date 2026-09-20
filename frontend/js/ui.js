@@ -63,7 +63,7 @@ export async function renderShell() {
     header.innerHTML = `
       <div class="pb-shell">
         <div class="pb-nav">
-          <a href="/" class="pb-brand"><span class="pb-mark" aria-hidden="true"><img src="/assets/images/petitbakery-logo.png" alt=""></span><span>PetitBakery</span></a>
+          <a href="/" class="pb-brand"><span class="pb-mark" aria-hidden="true"><img src="/assets/petitbakery-logo.png" alt=""></span><span>PetitBakery</span></a>
           <nav class="pb-nav-links" aria-label="Primary">
             <a href="/products/">Shop treats</a>
             <a href="/#faq-title">FAQ</a>

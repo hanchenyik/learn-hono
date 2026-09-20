@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Confirm your PetitBakery account</title>
+  </head>
+  <body style="margin:0;background:#fff3df;color:#24120d;font-family:Arial,Helvetica,sans-serif">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#fff3df;padding:32px 12px">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#fffaf2;border:1px solid #ead8c3;border-radius:20px;overflow:hidden">
+            <tr>
+              <td style="background:#ffc665;padding:28px 32px">
+                <p style="margin:0;font-size:13px;font-weight:bold;letter-spacing:2px;text-transform:uppercase">PetitBakery</p>
+                <h1 style="margin:12px 0 0;font-size:30px;line-height:1.15">A little hello from us</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:32px">
+                <p style="margin:0;font-size:16px;line-height:1.6">Hi {{ .Data.full_name }},</p>
+                <p style="font-size:16px;line-height:1.6">Confirm your email address to finish creating your PetitBakery account.</p>
+                <p style="margin:28px 0"><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 22px;border-radius:999px;background:#24120d;color:#fffaf2;font-weight:bold;text-decoration:none">Confirm email</a></p>
+                <p style="font-size:13px;line-height:1.6;color:#745746">If you did not create an account, you can ignore this email.</p>
+                <p style="font-size:13px;line-height:1.6;color:#745746">If the button does not work, copy and paste this link into your browser:<br><a href="{{ .ConfirmationURL }}" style="color:#745746;overflow-wrap:anywhere">{{ .ConfirmationURL }}</a></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

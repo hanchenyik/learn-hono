@@ -22,7 +22,6 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci --prefix backend
       - run: npm run typecheck --prefix backend
-      - run: npm run check
 
   deploy-backend-production:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

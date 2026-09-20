@@ -8,18 +8,21 @@
     <link rel="stylesheet" href="/styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="/js/config.js"></script>
-    <title>Cart · PetitBakery</title>
+    <title>Product · PetitBakery</title>
   </head>
   <body class="bg-slate-50 text-slate-900">
     <header id="site-header" class="sticky top-0 z-40"></header>
     <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <h1 class="text-4xl font-black tracking-tight">Your cart</h1>
-      <div class="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
-        <div id="cart-items" class="space-y-4"></div>
-        <aside id="cart-summary"></aside>
+      <a
+        href="/products/"
+        class="text-sm font-semibold text-slate-500 hover:text-slate-950"
+        >← Back to treats</a
+      >
+      <div id="product-detail" class="mt-6 grid gap-10 lg:grid-cols-2">
+        <p class="text-slate-500">Loading…</p>
       </div>
     </main>
     <footer id="site-footer"></footer>
-    <script type="module" src="/cart/cart.js"></script>
+    <script type="module" src="/products/detail.js"></script>
   </body>
 </html>

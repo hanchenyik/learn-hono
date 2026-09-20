@@ -13,7 +13,7 @@ async function init() {
       <div class="rounded-3xl border border-slate-200 bg-white p-8 text-center">
         <h2 class="text-2xl font-black">Sign in to finish checkout</h2>
         <p class="mt-2 text-slate-500">Your cart stays in this browser.</p>
-        <a href="/login/?next=/checkout/" class="mt-6 inline-block rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white">Sign in</a>
+        <a href="/auth/login/?next=/checkout/" class="mt-6 inline-block rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white">Sign in</a>
       </div>`
     return
   }

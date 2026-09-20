@@ -8,7 +8,7 @@ let allProducts = []
 function productCard(product) {
   return `
     <article class="pb-product-card">
-      <a href="/product/?id=${encodeURIComponent(product.id)}" class="pb-product-image">
+      <a href="/products/details/?id=${encodeURIComponent(product.id)}" class="pb-product-image">
         <img src="${escapeHtml(imageForProduct(product))}" alt="${escapeHtml(product.name)}" class="h-full w-full object-cover" loading="lazy">
       </a>
       <div class="pb-product-copy">
@@ -16,7 +16,7 @@ function productCard(product) {
           <span>${escapeHtml(product.category)}</span>
           <span>${product.stock} left</span>
         </div>
-        <a href="/product/?id=${encodeURIComponent(product.id)}"><h3>${escapeHtml(product.name)}</h3></a>
+        <a href="/products/details/?id=${encodeURIComponent(product.id)}"><h3>${escapeHtml(product.name)}</h3></a>
         <p>${escapeHtml(product.description)}</p>
         <div class="pb-product-bottom">
           <span class="pb-price">${money(product.price_cents)}</span>

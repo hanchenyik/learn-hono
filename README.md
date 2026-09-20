@@ -5,8 +5,8 @@ PetitBakery is a Cloudflare Pages storefront with Supabase Auth/Postgres and a H
 ## Setup
 
 1. Create a Supabase project.
-2. Add these Auth redirect URLs: `http://localhost:8788/verify/`, `http://localhost:8788/reset-password/`, `https://petitbakery.pages.dev/verify/`, and `https://petitbakery.pages.dev/reset-password/`. Signup and password-reset redirects must be on this allowlist ([Supabase redirect URL guide](https://supabase.com/docs/guides/auth/redirect-urls)).
-3. Copy `.env.example` to `.env` and fill in the values. Do not commit `.env`. The browser config at `frontend/js/config.js` also needs the `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` values; never put `SUPABASE_SECRET_KEY` there.
+2. Add these Auth redirect URLs: `http://localhost:8788/verify/`, `http://localhost:8788/reset-password/`, `https://petitbakery.pages.dev/verify/`, and `https://petitbakery.pages.dev/reset-password/`. Signup and password-reset redirects must be on this allowlist ([Supabase redirect URL guide](https://supabase.com/docs/guides/auth/redirect-urls)). These aliases redirect to the canonical `/auth/verify/` and `/auth/reset-password/` pages.
+3. Copy `.env.example` to `.env` and fill in the values. Do not commit `.env`. The local frontend serves `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` from `.env` through `/js/config.js`; it does not expose `SUPABASE_SECRET_KEY` to the browser.
 4. Apply the schema and seed products with the Supabase CLI. Use the database connection string and percent-encode special characters in its password: `npx supabase db push --db-url "postgresql://postgres:ENCODED_PASSWORD@db.PROJECT_REF.supabase.co:5432/postgres"`.
 5. GitHub Actions uses repository secrets as the source of truth for production. The deployment workflow syncs the values required at request time into the Worker runtime; do not enter them manually in the Cloudflare dashboard. The production storefront is `https://petitbakery.pages.dev` and its API is `https://petitbakery-api.velozz.workers.dev`.
 
@@ -14,7 +14,7 @@ PetitBakery is a Cloudflare Pages storefront with Supabase Auth/Postgres and a H
 
 Run these from the repository root with Node 22 installed:
 
-Create `.env` once with `cp .env.example .env` (PowerShell: `Copy-Item .env.example .env`), then fill its values. For local use, set `APP_ORIGIN` and `CORS_ORIGIN` to `http://localhost:8788`. Copy `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` into `frontend/js/config.js` for browser auth; keep the secret key out of frontend files. The local Worker uses the Supabase project in `.env`, so use a dedicated development project for signup, checkout, or admin changes.
+Create `.env` once with `cp .env.example .env` (PowerShell: `Copy-Item .env.example .env`), then fill its values. For local use, set `APP_ORIGIN` and `CORS_ORIGIN` to `http://localhost:8788`. `npm start` loads `.env` and serves the browser-safe Supabase values locally; no manual edit to `frontend/js/config.js` is needed. The local Worker uses the Supabase project in `.env`, so use a dedicated development project for signup, checkout, or admin changes.
 
 1. Install the backend dependencies:
 

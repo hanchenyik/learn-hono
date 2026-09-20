@@ -43,7 +43,7 @@ async function init() {
   await renderShell()
   const user = await getCurrentUser()
   if (!user) {
-    location.href = '/login/?next=/account/'
+    location.href = '/auth/login/?next=/account/'
     return
   }
 

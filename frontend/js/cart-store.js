@@ -1,4 +1,4 @@
-const CART_KEY = 'nimble_cart_v1'
+const CART_KEY = 'petitbakery_cart_v1'
 import { imageForProduct } from './product-images.js'
 
 export function getCart() {
@@ -12,7 +12,7 @@ export function getCart() {
 
 function saveCart(items) {
   localStorage.setItem(CART_KEY, JSON.stringify(items))
-  window.dispatchEvent(new CustomEvent('nimble:cart-changed'))
+  window.dispatchEvent(new CustomEvent('petitbakery:cart-changed'))
 }
 
 export function addToCart(product, quantity = 1) {

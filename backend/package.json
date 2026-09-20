@@ -1,5 +1,5 @@
 {
-  "name": "nimble-commerce-api",
+  "name": "petitbakery-api",
   "private": true,
   "type": "module",
   "allowScripts": {
@@ -9,13 +9,9 @@
   "scripts": {
     "dev": "wrangler dev --env-file=../.env",
     "deploy": "wrangler deploy",
-    "typecheck": "tsc --noEmit",
-    "db:migrate:local": "wrangler d1 migrations apply petitbakery-db --local",
-    "db:migrate:remote": "wrangler d1 migrations apply petitbakery-db --remote",
-    "db:seed:local": "wrangler d1 execute petitbakery-db --local --file=./migrations/0002_seed_products.sql"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "better-auth": "^1.6.23",
     "hono": "^4.13.3"
   },
   "devDependencies": {

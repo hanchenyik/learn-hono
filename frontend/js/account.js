@@ -1,4 +1,4 @@
-import { api, getCurrentUser } from './api.js'
+import { api, getCurrentUser, supabase } from './api.js'
 import { escapeHtml, money, renderShell, toast } from './ui.js'
 
 async function init() {
@@ -9,7 +9,7 @@ async function init() {
     return
   }
 
-  document.getElementById('account-name').textContent = user.name
+  document.getElementById('account-name').textContent = user.displayName
   document.getElementById('account-email').textContent = user.email
 
   const { orders } = await api('/api/orders')
@@ -25,7 +25,7 @@ async function init() {
 
   document.getElementById('logout').addEventListener('click', async () => {
     try {
-    await api('/api/auth/sign-out', { method: 'POST', body: '{}' })
+    await supabase.auth.signOut()
     } catch (error) {
       toast(error.message, 'error')
       return

@@ -1,0 +1,7 @@
+/admin/admin_index.html /admin/ 200
+/admin/admin_activity.html /admin/activity/ 200
+/admin/admin_customers.html /admin/customers/ 200
+/admin/admin_orders.html /admin/orders/ 200
+/admin/admin_payments.html /admin/payments/ 200
+/admin/admin_products.html /admin/products/ 200
+/admin/admin_shipping.html /admin/shipping/ 200

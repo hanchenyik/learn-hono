@@ -1,6 +1,6 @@
-import { getCart, removeFromCart, updateQuantity, cartSubtotal } from './cart-store.js'
-import { imageForCartItem } from './product-images.js'
-import { escapeHtml, money, renderShell } from './ui.js'
+import { getCart, removeFromCart, updateQuantity, cartSubtotal } from '../js/cart-store.js'
+import { imageForCartItem } from '../js/product-images.js'
+import { escapeHtml, money, renderShell } from '../js/ui.js'
 
 function render() {
   const items = getCart()

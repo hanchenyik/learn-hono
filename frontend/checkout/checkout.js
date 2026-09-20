@@ -1,7 +1,7 @@
-import { api, getCurrentUser } from './api.js'
-import { clearCart, getCart, cartSubtotal } from './cart-store.js'
-import { imageForCartItem } from './product-images.js'
-import { escapeHtml, money, renderShell, setBusy, toast } from './ui.js'
+import { api, getCurrentUser } from '../js/api.js'
+import { clearCart, getCart, cartSubtotal } from '../js/cart-store.js'
+import { imageForCartItem } from '../js/product-images.js'
+import { escapeHtml, money, renderShell, setBusy, toast } from '../js/ui.js'
 
 async function init() {
   await renderShell()

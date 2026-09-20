@@ -1,7 +1,7 @@
-import { api } from './api.js'
-import { addToCart } from './cart-store.js'
-import { imageForProduct } from './product-images.js'
-import { escapeHtml, money, renderShell, toast } from './ui.js'
+import { api } from '../js/api.js'
+import { addToCart } from '../js/cart-store.js'
+import { imageForProduct } from '../js/product-images.js'
+import { escapeHtml, money, renderShell, toast } from '../js/ui.js'
 
 let allProducts = []
 

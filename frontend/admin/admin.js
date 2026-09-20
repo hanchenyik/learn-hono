@@ -1,12 +1,13 @@
-import { api, getCurrentUser } from './api.js'
-import { escapeHtml, money, setBusy } from './ui.js'
+import { api, getCurrentUser } from '../js/api.js'
+import { escapeHtml, money, setBusy } from '../js/ui.js'
 
-const page = location.pathname.split('/').pop().replace('admin_', '').replace('.html', '') || 'index'
+const route = location.pathname.replace(/\/+$/, '').split('/').pop() || 'index'
+const page = (route === 'admin' ? 'index' : route).replace('admin_', '').replace('.html', '') || 'index'
 const endpoint = { index: 'dashboard', products: 'products', orders: 'orders', customers: 'customers', payments: 'payments', activity: 'activity', shipping: 'orders' }[page] || 'dashboard'
 const labels = { index: 'Bakery overview', products: 'Products', orders: 'Orders', customers: 'Customers', payments: 'Demo payments', activity: 'Admin activity', shipping: 'Shipping' }
 const orderStatuses = ['confirmed', 'processing', 'completed', 'cancelled']
 const shippingStatuses = ['pending', 'preparing', 'shipped', 'delivered', 'cancelled']
-const nav = () => ['index', 'products', 'orders', 'shipping', 'customers', 'payments', 'activity'].map((key) => `<a href="admin_${key}.html" ${key === page ? 'aria-current="page" class="pb-button"' : ''}>${labels[key]}</a>`).join('')
+const nav = () => ['index', 'products', 'orders', 'shipping', 'customers', 'payments', 'activity'].map((key) => `<a href="${key === 'index' ? '/admin/' : `/admin/${key}/`}" ${key === page ? 'aria-current="page" class="pb-button"' : ''}>${labels[key]}</a>`).join('')
 const empty = (what) => `<p class="pb-admin-empty">No ${what} yet.</p>`
 
 function format(value, key) {

@@ -1,5 +1,5 @@
-import { api, getCurrentUser, supabase } from './api.js'
-import { escapeHtml, money, renderShell, toast } from './ui.js'
+import { api, getCurrentUser, supabase } from '../js/api.js'
+import { escapeHtml, money, renderShell, toast } from '../js/ui.js'
 
 const ordersRoot = document.getElementById('orders')
 const orderDate = (value) => new Date(typeof value === 'number' ? value * 1000 : value).toLocaleDateString()

@@ -1,5 +1,5 @@
-import { supabase } from './api.js'
-import { renderShell, setBusy, toast, escapeHtml } from './ui.js'
+import { supabase } from '../js/api.js'
+import { renderShell, setBusy, toast, escapeHtml } from '../js/ui.js'
 
 const state = document.body.dataset.authState || 'signin'
 const root = document.getElementById('auth-root')

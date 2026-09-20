@@ -38,13 +38,13 @@ Create `.env` once with `cp .env.example .env` (PowerShell: `Copy-Item .env.exam
 4. Check browser JavaScript syntax on macOS/Linux:
 
    ```sh
-   for file in frontend/js/*.js; do node --check "$file"; done
+   find frontend -type f -name '*.js' -print0 | xargs -0 -n 1 node --check
    ```
 
    In PowerShell:
 
    ```powershell
-   Get-ChildItem frontend/js/*.js | ForEach-Object { node --check $_.FullName; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE } }
+   Get-ChildItem frontend -Recurse -Filter *.js | ForEach-Object { node --check $_.FullName; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE } }
    ```
 
 To run either server separately, use `npm run dev --prefix backend` for the API or `node scripts/serve-frontend.mjs` for the storefront. Use these instead of `npm start` when you only need one server.

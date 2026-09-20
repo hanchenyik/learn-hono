@@ -10,7 +10,7 @@ PetitBakery is a Cloudflare Pages storefront with Supabase Auth/Postgres and a H
 4. Put `SUPABASE_URL` and `SUPABASE_SECRET_KEY` in the Worker secret store. The production storefront is `https://petitbakery.pages.dev` and its API is `https://petitbakery-api.velozz.workers.dev`; the deployment workflow writes the browser-safe URL and publishable key configuration.
 5. On macOS or Windows, install Node 22, run `npm ci --prefix backend`, then `npm start`. This starts the Hono API at `http://localhost:8787` and the static storefront at `http://localhost:8788`; press Ctrl+C to stop both. Run `npm run typecheck --prefix backend` and `npm run check` before committing.
 
-GitHub Actions expects every `.env` name as a repository secret: `APP_ORIGIN`, `CORS_ORIGIN`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_JWKS_URL`, and `POSTGRESQL_DB_PASSWORD`. Pull requests only run checks; pushes to `main` and manual dispatches deploy production.
+GitHub Actions expects every `.env` name as a repository secret: `APP_ORIGIN`, `CORS_ORIGIN`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_JWKS_URL`, and `POSTGRESQL_DB_PASSWORD`. Also set `SUPABASE_DB_POOLER_HOST` to the hostname from Supabase Dashboard → Connect → Session pooler; GitHub-hosted runners need this IPv4-compatible endpoint for migrations. Pull requests only run checks; pushes to `main` and manual dispatches deploy production.
 
 Promote a signed-up account manually:
 

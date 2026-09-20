@@ -1,0 +1,67 @@
+name: Verify and deploy PetitBakery backend
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --prefix backend
+      - run: npm run typecheck --prefix backend
+      - run: npm run check
+
+  deploy-backend-production:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: check-backend
+    runs-on: ubuntu-latest
+    env:
+      APP_ORIGIN: ${{ secrets.APP_ORIGIN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
+      POSTGRESQL_DB_PASSWORD: ${{ secrets.POSTGRESQL_DB_PASSWORD }}
+      SUPABASE_DB_POOLER_HOST: ${{ secrets.SUPABASE_DB_POOLER_HOST }}
+      SUPABASE_JWKS_URL: ${{ secrets.SUPABASE_JWKS_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --prefix backend
+      - name: Validate production secrets
+        run: test -n "$APP_ORIGIN" && test -n "$CORS_ORIGIN" && test -n "$SUPABASE_URL" && test -n "$SUPABASE_PUBLISHABLE_KEY" && test -n "$SUPABASE_SECRET_KEY" && test -n "$SUPABASE_JWKS_URL" && test -n "$POSTGRESQL_DB_PASSWORD" && test -n "$SUPABASE_DB_POOLER_HOST" && test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+      - name: Apply Supabase migrations
+        run: node -e "const ref=new URL(process.env.SUPABASE_URL).hostname.split('.')[0];const db='postgresql://postgres.'+ref+':'+encodeURIComponent(process.env.POSTGRESQL_DB_PASSWORD)+'@'+process.env.SUPABASE_DB_POOLER_HOST+':5432/postgres';require('child_process').execFileSync('npx',['supabase','db','push','--db-url',db],{stdio:'inherit'})"
+      - name: Create Worker
+        run: npm run deploy --prefix backend
+      - name: Upload Worker secrets
+        working-directory: backend
+        run: |
+          npx wrangler secret put SUPABASE_URL <<< "$SUPABASE_URL"
+          npx wrangler secret put SUPABASE_SECRET_KEY <<< "$SUPABASE_SECRET_KEY"
+      - name: Deploy Worker with secrets
+        run: npm run deploy --prefix backend
+      - name: Smoke test Worker and CORS
+        run: |
+          curl --fail --silent --show-error https://petitbakery-api.velozz.workers.dev/health
+          curl --fail --silent --show-error -D /tmp/petitbakery-cors -o /dev/null -X OPTIONS https://petitbakery-api.velozz.workers.dev/api/products -H 'Origin: https://petitbakery.pages.dev' -H 'Access-Control-Request-Method: GET'
+          grep -qi '^access-control-allow-origin: https://petitbakery.pages.dev' /tmp/petitbakery-cors

@@ -21,7 +21,7 @@ orderRoutes.post('/', async (c) => {
 })
 orderRoutes.get('/', async (c) => {
   const user = await requireUser(c)
-  return c.json({ orders: await supabase(c, `/rest/v1/orders?user_id=eq.${encodeURIComponent(user.id)}&select=id,status,subtotal_cents,shipping_cents,tax_cents,total_cents,created_at&order=created_at.desc&limit=50`) })
+  return c.json({ orders: await supabase(c, `/rest/v1/orders?user_id=eq.${encodeURIComponent(user.id)}&select=id,status,shipping_status,subtotal_cents,shipping_cents,tax_cents,total_cents,created_at&order=created_at.desc&limit=50`) })
 })
 orderRoutes.get('/:id', async (c) => {
   const user = await requireUser(c), id = safeText(c.req.param('id'), 80)

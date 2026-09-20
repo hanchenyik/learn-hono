@@ -58,8 +58,8 @@ async function init() {
       document.getElementById('checkout-root').innerHTML = `
         <div class="rounded-3xl border border-emerald-200 bg-emerald-50 p-8 text-center">
           <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-600 text-2xl text-white">✓</div>
-          <h2 class="mt-5 text-3xl font-black text-slate-950">Order confirmed</h2>
-          <p class="mt-2 text-slate-600">Demo payment complete. No card or bank details were collected.</p>
+          <h2 class="mt-5 text-3xl font-black text-slate-950">Demo order confirmed</h2>
+          <p class="mt-2 text-slate-600">This demo created an order and payment record. No card details were collected and no money was charged.</p>
           <p class="mt-3 text-sm font-mono text-slate-500">Order ${escapeHtml(data.orderId)}</p>
           <a href="/account/" class="mt-6 inline-block rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white">View orders</a>
         </div>`

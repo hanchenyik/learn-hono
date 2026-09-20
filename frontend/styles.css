@@ -106,6 +106,7 @@ button, input, select { font: inherit; }
 .pb-float-cart-count { display: grid; min-width: 1.35rem; height: 1.35rem; place-items: center; border-radius: 999px; background: var(--pb-peach); color: var(--pb-ink); font-size: .72rem; }
 .pb-admin-nav { display:flex; flex-wrap:wrap; gap:.5rem; margin:1.25rem 0; } .pb-admin-nav a { padding:.55rem .8rem; border:1px solid var(--pb-line); border-radius:999px; text-decoration:none; font-weight:800; }
 .pb-admin-card { padding:1rem; border:1px solid var(--pb-line); border-radius:1.2rem; background:var(--pb-card); } .pb-admin-table { width:100%; border-collapse:collapse; font-size:.85rem; } .pb-admin-table th,.pb-admin-table td { padding:.75rem; border-bottom:1px solid var(--pb-line); text-align:left; white-space:nowrap; } .pb-admin-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.7rem; } .pb-admin-metrics div { padding:1rem; border-radius:1rem; background:var(--pb-peach); } .pb-admin-metrics b,.pb-admin-metrics strong { display:block; } .pb-admin-metrics strong { margin-top:.5rem; font-size:1.4rem; }
+.pb-admin-empty { padding:1.25rem; border:1px dashed var(--pb-line); border-radius:1rem; color:var(--pb-muted); }
 
 /* Keep the smaller auth/cart pages on the same PetitBakery palette while their
    lesson markup remains intentionally simple. */

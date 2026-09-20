@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  check:
+  check-frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -20,9 +20,9 @@ jobs:
           node-version: 22
       - run: npm run check:stage2
 
-  deploy-production:
+  deploy-frontend-production:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    needs: check
+    needs: check-frontend
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

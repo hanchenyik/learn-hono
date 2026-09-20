@@ -55,7 +55,7 @@ function orderEditors(orders) {
 async function load() {
   const user = await getCurrentUser()
   if (!user) {
-    location.href = '/login/?next=' + encodeURIComponent(location.pathname)
+    location.href = '/auth/login/?next=' + encodeURIComponent(location.pathname)
     return
   }
 

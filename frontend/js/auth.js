@@ -1,6 +1,8 @@
 import { supabase } from './api.js'
 import { renderShell, toast } from './ui.js'
-const state = document.body.dataset.authState || 'signin', root = document.getElementById('auth-root'), next = new URLSearchParams(location.search).get('next') || '/account/'
+const state = document.body.dataset.authState || 'signin', root = document.getElementById('auth-root')
+const requestedNext = new URLSearchParams(location.search).get('next') || ''
+const next = requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '/account/'
 const field = (name, type = 'text', label = name) => `<label class="block mt-4 text-sm font-bold">${label}<input required name="${name}" type="${type}" class="pb-field mt-1 w-full rounded-xl" /></label>`
 async function init() {
   await renderShell()

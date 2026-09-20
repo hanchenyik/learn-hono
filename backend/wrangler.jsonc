@@ -7,8 +7,7 @@
     "enabled": true
   },
   "vars": {
-    "APP_ORIGIN": "https://petitbakery-6gf.pages.dev",
-    "CORS_ORIGIN": "https://petitbakery-6gf.pages.dev",
-    "SUPABASE_URL": "https://YOUR_PROJECT.supabase.co"
+    "APP_ORIGIN": "https://petitbakery.pages.dev",
+    "CORS_ORIGIN": "https://petitbakery.pages.dev"
   }
 }

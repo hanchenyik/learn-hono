@@ -94,4 +94,4 @@ export function escapeHtml(value = '') {
   }[char]))
 }
 
-window.addEventListener('nimble:cart-changed', updateCartBadge)
+window.addEventListener('petitbakery:cart-changed', updateCartBadge)

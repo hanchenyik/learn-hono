@@ -14,9 +14,9 @@ const PRODUCT_IMAGES = {
 }
 
 export function imageForProduct(product) {
-  return PRODUCT_IMAGES[product.id] || product.image_url
+  return PRODUCT_IMAGES[product.id] || '/assets/images/petitbakery-hero-cake.png'
 }
 
 export function imageForCartItem(item) {
-  return PRODUCT_IMAGES[item.productId] || item.imageUrl
+  return PRODUCT_IMAGES[item.productId] || '/assets/images/petitbakery-hero-cake.png'
 }

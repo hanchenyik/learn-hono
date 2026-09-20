@@ -53,4 +53,4 @@ function render() {
 }
 
 renderShell().then(render)
-window.addEventListener('nimble:cart-changed', render)
+window.addEventListener('petitbakery:cart-changed', render)

@@ -4,146 +4,33 @@ import { escapeHtml, money, setBusy } from '../js/ui.js'
 const route = location.pathname.replace(/\/+$/, '').split('/').pop() || 'index'
 const page = (route === 'admin' ? 'index' : route).replace('admin_', '').replace('.html', '') || 'index'
 const endpoint = { products: 'products', customers: 'customers' }[page] || 'workspace'
-const labels = { index: 'Order workspace', products: 'Products', orders: 'Order workspace', customers: 'Customers', payments: 'Order workspace', activity: 'Order workspace', shipping: 'Order workspace' }
 if (endpoint === 'workspace' && page !== 'index') location.replace('/admin/')
-const orderStatuses = ['confirmed', 'processing', 'completed', 'cancelled']
-const shippingStatuses = ['pending', 'preparing', 'shipped', 'delivered', 'cancelled']
-const nav = () => ['index', 'products', 'customers'].map((key) => `<a href="${key === 'index' ? '/admin/' : `/admin/${key}/`}" ${(key === page || (key === 'index' && endpoint === 'workspace')) ? 'aria-current="page" class="pb-button"' : ''}>${labels[key]}</a>`).join('')
-const empty = (what) => `<p class="pb-admin-empty">No ${what} yet.</p>`
+const customer = (o) => o.profiles?.display_name || o.profiles?.email || 'Customer'
+const summary = (o) => (o.order_items || []).map(i => `${i.product_name} × ${i.quantity}`).join(', ') || 'Order items'
+const date = (value) => new Date(value).toLocaleDateString('en-MY', { day: 'numeric', month: 'short' })
+const paymentState = (o) => o.payment_status || o.payments?.[0]?.status || 'paid'
+const state = (o) => o.shipping_status === 'pending' ? 'Ready to prepare' : o.shipping_status === 'preparing' ? 'In preparation' : o.shipping_status === 'shipped' ? 'Out for delivery' : o.shipping_status === 'delivered' ? 'Delivered' : o.status === 'cancelled' ? 'Cancelled' : paymentState(o) === 'pending' ? 'Waiting for payment' : 'Confirmed'
+const action = (o) => o.shipping_status === 'pending' ? ['Start preparing', 'preparing', 'processing'] : o.shipping_status === 'preparing' ? ['Mark ready to ship', 'shipped', 'processing'] : o.shipping_status === 'shipped' ? ['Mark delivered', 'delivered', 'completed'] : null
 
-function format(value, key) {
-  if (value == null || value === '') return '—'
-  if (key === 'created_at') return new Date(value).toLocaleString()
-  if (key.includes('cents') && typeof value === 'number') return money(value)
-  return escapeHtml(typeof value === 'object' ? JSON.stringify(value) : value)
+function row(o, selected) { return `<button type="button" data-open-order="${escapeHtml(o.id)}" class="pb-order-row ${selected ? 'is-selected' : ''}"><span class="pb-order-number">#${escapeHtml(o.id.slice(0, 8))}</span><span><b>${escapeHtml(customer(o))}</b><small>${escapeHtml(summary(o))}</small></span><span><b>${money(o.total_cents)}</b><small>${escapeHtml(state(o))}</small></span><span class="pb-row-action">Open</span></button>` }
+function detail(o) {
+  if (!o) return `<aside class="pb-order-detail"><p class="pb-kicker">Select an order</p><h2 class="pb-display">Your next task will appear here.</h2></aside>`
+  const next = action(o), payment = o.payments?.[0]
+  return `<aside class="pb-order-detail" aria-live="polite"><div class="pb-detail-top"><div><p class="pb-kicker">Order #${escapeHtml(o.id.slice(0, 8))}</p><h2 class="pb-display">${escapeHtml(customer(o))}</h2><p>${money(o.total_cents)} · placed ${date(o.created_at)}</p></div><span class="pb-status">${escapeHtml(state(o))}</span></div><div class="pb-detail-section"><h3>Order</h3><ul class="pb-detail-items">${(o.order_items || []).map(i => `<li><span>${escapeHtml(i.product_name)} <small>× ${i.quantity}</small></span><b>${money(i.unit_price_cents * i.quantity)}</b></li>`).join('') || '<li>Items unavailable</li>'}</ul></div><div class="pb-detail-section pb-detail-two"><div><h3>Delivery</h3><p>${escapeHtml([o.shipping_name, o.address1, o.address2, o.city, o.postal_code, o.country].filter(Boolean).join(', '))}</p></div><div><h3>Payment</h3><p><span class="pb-status ${paymentState(o) === 'paid' ? 'paid' : ''}">${escapeHtml(paymentState(o))}</span><br>${escapeHtml(payment?.receipt_number || 'Demo receipt')}</p></div></div><div class="pb-order-timeline"><span class="is-done">Paid</span><span class="${['preparing','shipped','delivered'].includes(o.shipping_status) ? 'is-done' : ''}">Preparing</span><span class="${['shipped','delivered'].includes(o.shipping_status) ? 'is-done' : ''}">Shipped</span><span class="${o.shipping_status === 'delivered' ? 'is-done' : ''}">Delivered</span></div>${next ? `<button class="pb-button pb-detail-action" data-advance-order="${escapeHtml(o.id)}" data-shipping="${next[1]}" data-status="${next[2]}">${next[0]}</button>` : '<p class="pb-detail-finished">This order is complete.</p>'}</aside>`
 }
-
-function readOnlyRows(data, what) {
-  if (!data?.length) return empty(what)
-  const columns = Object.keys(data[0]).filter((key) => !['description', 'image_url', 'address1', 'address2'].includes(key))
-  return `<div class="overflow-x-auto"><table class="pb-admin-table"><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll('_', ' '))}</th>`).join('')}</tr></thead><tbody>${data.map((item) => `<tr>${columns.map((key) => `<td>${format(item[key], key)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
+function workspace(data, selectedId, filter = 'prepare') {
+  const orders = data.orders || [], queues = { payment: orders.filter(o => paymentState(o) === 'pending'), prepare: orders.filter(o => paymentState(o) === 'paid' && ['pending', 'preparing'].includes(o.shipping_status)), delivery: orders.filter(o => ['shipped', 'delivered'].includes(o.shipping_status)) }, active = queues[filter] || queues.prepare, selected = orders.find(o => o.id === selectedId) || active[0] || orders[0]
+  const title = filter === 'payment' ? 'Waiting for payment' : filter === 'delivery' ? 'In delivery' : 'Ready to prepare'
+  return `<div class="pb-admin-layout"><section><div class="pb-admin-intro"><div><p class="pb-kicker">Good things rise daily</p><h1 class="pb-display">Today at the bakery</h1><p>Move each order from payment to doorstep with a clear next step.</p></div><div class="pb-admin-counts"><span><b>${orders.length}</b>Orders</span><span><b>${queues.prepare.length}</b>To prepare</span><span><b>${queues.delivery.filter(o => o.shipping_status === 'shipped').length}</b>Out for delivery</span></div></div><nav class="pb-queue-tabs" aria-label="Order queues"><button data-filter="prepare" class="${filter === 'prepare' ? 'is-active' : ''}">To prepare <b>${queues.prepare.length}</b></button><button data-filter="payment" class="${filter === 'payment' ? 'is-active' : ''}">Needs payment <b>${queues.payment.length}</b></button><button data-filter="delivery" class="${filter === 'delivery' ? 'is-active' : ''}">In delivery <b>${queues.delivery.length}</b></button></nav><section class="pb-queue"><div class="pb-queue-head"><div><p class="pb-kicker">${filter === 'payment' ? 'Follow up' : filter === 'delivery' ? 'Keep an eye on' : 'Make next'}</p><h2>${title}</h2></div><span>${active.length} orders</span></div><div class="pb-order-list">${active.length ? active.map(o => row(o, o.id === selected?.id)).join('') : '<p class="pb-admin-empty">Nothing needs attention here.</p>'}</div></section>${data.lowStock?.length ? `<section class="pb-stock-note"><div><p class="pb-kicker">Inventory check</p><b>Low stock</b><p>${data.lowStock.map(p => `${escapeHtml(p.name)} (${p.stock} left)`).join(' · ')}</p></div><a href="/admin/products/" class="pb-button alt">View products</a></section>` : ''}</section>${detail(selected)}</div>`
 }
-
-function productEditors(products) {
-  if (!products?.length) return empty('products')
-  return `<div class="grid gap-4">${products.map((product) => `<form data-product-id="${escapeHtml(product.id)}" class="grid gap-3 rounded-2xl border border-[color:var(--pb-line)] bg-white p-4 sm:grid-cols-2">
-    <label class="text-sm font-semibold">Name<input name="name" required maxlength="100" value="${escapeHtml(product.name)}" class="pb-field mt-1 w-full"></label>
-    <label class="text-sm font-semibold">Category<input name="category" required maxlength="40" value="${escapeHtml(product.category)}" class="pb-field mt-1 w-full"></label>
-    <label class="text-sm font-semibold">Price (MYR)<input name="price" type="number" required min="0" step="0.01" value="${(product.price_cents / 100).toFixed(2)}" class="pb-field mt-1 w-full"></label>
-    <label class="text-sm font-semibold">Stock<input name="stock" type="number" required min="0" step="1" value="${product.stock}" class="pb-field mt-1 w-full"></label>
-    <label class="text-sm font-semibold sm:col-span-2">Description<textarea name="description" required maxlength="1000" rows="3" class="pb-field mt-1 w-full">${escapeHtml(product.description)}</textarea></label>
-    <label class="text-sm font-semibold sm:col-span-2">Image path or URL<input name="image_url" required maxlength="500" value="${escapeHtml(product.image_url)}" class="pb-field mt-1 w-full"></label>
-    <label class="flex items-center gap-2 text-sm font-semibold"><input name="active" type="checkbox" ${product.active ? 'checked' : ''}> Available in storefront</label>
-    <div class="flex items-center gap-3"><button class="pb-button" type="submit">Save product</button><span data-form-status role="status" class="text-sm"></span></div>
-  </form>`).join('')}</div>`
-}
-
-function statusSelect(name, label, value, choices) {
-  const options = [...new Set([value, ...choices])]
-  return `<label class="block text-sm font-semibold">${label}<select name="${name}" class="pb-field mt-1 w-full">${options.map((option) => `<option value="${escapeHtml(option)}" ${option === value ? 'selected' : ''}>${escapeHtml(option)}</option>`).join('')}</select></label>`
-}
-
-function orderEditors(orders) {
-  if (!orders?.length) return empty('orders')
-  return `<div class="grid gap-4">${orders.map((order) => `<form data-order-id="${escapeHtml(order.id)}" data-original-status="${escapeHtml(order.status)}" data-original-shipping="${escapeHtml(order.shipping_status)}" class="grid gap-4 rounded-2xl border border-[color:var(--pb-line)] bg-white p-4 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
-    <div class="min-w-0"><p class="break-all font-mono text-xs text-[color:var(--pb-muted)]">${escapeHtml(order.id)}</p><p class="mt-1 font-semibold">${escapeHtml(order.profiles?.display_name || order.profiles?.email || 'Customer')}</p><p class="mt-1 text-sm">${money(order.total_cents)}</p></div>
-    ${statusSelect('status', 'Order status', order.status, orderStatuses)}
-    ${statusSelect('shipping_status', 'Shipping status', order.shipping_status || 'pending', shippingStatuses)}
-    <div class="flex items-center gap-3"><button class="pb-button" type="submit">Save status</button><span data-form-status role="status" class="text-sm"></span></div>
-  </form>`).join('')}</div>`
-}
-function workspace(data) {
-  const orders = data.orders || [], queue = (title, list) => `<section class="mt-6"><h2 class="text-xl font-bold">${title} <span class="text-sm text-[color:var(--pb-muted)]">${list.length}</span></h2>${orderEditors(list)}</section>`
-  return `${queue('Unpaid QR orders', orders.filter(o => o.payment_method === 'qr' && o.payment_status !== 'paid'))}${queue('Paid orders to prepare', orders.filter(o => o.payment_status === 'paid' && o.shipping_status === 'pending'))}${queue('In delivery', orders.filter(o => ['shipped','delivered'].includes(o.shipping_status)))}${queue('Refund cancellations', orders.filter(o => o.payment_status === 'refunded'))}<section class="mt-6"><h2 class="text-xl font-bold">Low stock</h2>${data.lowStock?.length ? data.lowStock.map(p => `<p class="mt-2 rounded-xl bg-orange-50 p-3">${escapeHtml(p.name)} — ${p.stock} left</p>`).join('') : '<p class="mt-2">All stocked up.</p>'}</section>`
-}
-
+function products(items) { return `<div class="pb-support-page"><p class="pb-kicker">Bakery catalogue</p><h1 class="pb-display">Products</h1><div class="pb-product-admin-list">${items.map(p => `<form data-product-id="${escapeHtml(p.id)}"><div><b>${escapeHtml(p.name)}</b><small>${escapeHtml(p.category)}</small></div><label>Price<input name="price" type="number" min="0" step="0.01" value="${(p.price_cents / 100).toFixed(2)}"></label><label>Stock<input name="stock" type="number" min="0" value="${p.stock}"></label><button class="pb-button">Save</button></form>`).join('')}</div></div>` }
+function customers(items) { return `<div class="pb-support-page"><p class="pb-kicker">People we bake for</p><h1 class="pb-display">Customers</h1><div class="pb-customer-list">${items.map(p => `<div><b>${escapeHtml(p.display_name || 'Customer')}</b><span>${escapeHtml(p.email)}</span><small>Joined ${date(p.created_at)}</small></div>`).join('')}</div></div>` }
 async function load() {
-  const user = await getCurrentUser()
-  if (!user) {
-    location.href = '/auth/login/?next=' + encodeURIComponent(location.pathname)
-    return
-  }
-
-  let data
-  try {
-    data = await api(`/api/admin/${endpoint}`)
-  } catch (error) {
-    document.body.innerHTML = `<main class="pb-main"><h1 class="pb-display">${error.status === 403 ? 'Admin access required' : `Could not load ${labels[page].toLowerCase()}`}</h1><p role="alert" class="mt-3">${escapeHtml(error.message)}</p><div class="mt-5 flex gap-3"><button class="pb-button" onclick="location.reload()">Try again</button><a class="pb-button alt" href="/">Back to shop</a></div></main>`
-    return
-  }
-
-  const value = data[endpoint] || data.orders || []
-  const body = endpoint === 'workspace' ? workspace(data) : page === 'products' ? productEditors(value) : readOnlyRows(value, page)
-
-  document.body.innerHTML = `<header class="pb-shell"><div class="pb-nav"><a class="pb-brand" href="/"><span>PetitBakery</span></a><a href="/account/">${escapeHtml(user.displayName)}</a></div></header><main class="pb-main"><span class="pb-kicker">Back office</span><h1 class="pb-display" style="font-size:clamp(2.5rem,6vw,5rem)">${labels[page]}</h1><nav class="pb-admin-nav" aria-label="Admin">${nav()}</nav>${page === 'customers' || page === 'payments' || page === 'activity' ? '<p class="mb-4 text-sm text-[color:var(--pb-muted)]">Read-only records. Checkout is a demo and does not collect or charge payment.</p>' : ''}<section class="pb-admin-card" aria-label="${labels[page]}">${body}</section></main>`
-
-  const inviteForm = document.querySelector('#admin-invite-form')
-  inviteForm?.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    const button = inviteForm.querySelector('button[type="submit"]')
-    const status = document.querySelector('#admin-invite-status')
-    const email = new FormData(inviteForm).get('email')
-    setBusy(button, true, 'Sending invite…')
-    status.textContent = ''
-    status.className = 'text-sm'
-    try {
-      const result = await api('/api/admin/invites', { method: 'POST', body: JSON.stringify({ email }) })
-      inviteForm.reset()
-      status.textContent = `Invitation sent to ${result.email}.`
-    } catch (error) {
-      status.textContent = error.message
-      status.className = 'text-sm text-red-700'
-    } finally {
-      setBusy(button, false)
-    }
-  })
-
-  document.querySelectorAll('form[data-product-id]').forEach((form) => form.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    const button = form.querySelector('button[type="submit"]')
-    const status = form.querySelector('[data-form-status]')
-    setBusy(button, true, 'Saving…')
-    status.textContent = ''
-    status.className = 'text-sm'
-    const fields = Object.fromEntries(new FormData(form))
-    const payload = { name: fields.name, category: fields.category, description: fields.description, image_url: fields.image_url, price_cents: Math.round(Number(fields.price) * 100), stock: Number(fields.stock), active: form.elements.active.checked }
-    try {
-      await api(`/api/admin/products/${encodeURIComponent(form.dataset.productId)}`, { method: 'PATCH', body: JSON.stringify(payload) })
-      status.textContent = 'Saved.'
-    } catch (error) {
-      status.textContent = error.message
-      status.className = 'text-sm text-red-700'
-    } finally {
-      setBusy(button, false)
-    }
-  }))
-
-  document.querySelectorAll('form[data-order-id]').forEach((form) => form.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    const button = form.querySelector('button[type="submit"]')
-    const status = form.querySelector('[data-form-status]')
-    const fields = new FormData(form)
-    const payload = {}
-    if (fields.get('status') !== form.dataset.originalStatus) payload.status = fields.get('status')
-    if (fields.get('shipping_status') !== form.dataset.originalShipping) payload.shipping_status = fields.get('shipping_status')
-    if (!Object.keys(payload).length) { status.textContent = 'No changes.'; return }
-    setBusy(button, true, 'Saving…')
-    status.textContent = ''
-    status.className = 'text-sm'
-    try {
-      const { order } = await api(`/api/admin/orders/${encodeURIComponent(form.dataset.orderId)}`, { method: 'PATCH', body: JSON.stringify(payload) })
-      form.dataset.originalStatus = order.status
-      form.dataset.originalShipping = order.shipping_status
-      status.textContent = 'Saved.'
-    } catch (error) {
-      status.textContent = error.message
-      status.className = 'text-sm text-red-700'
-    } finally {
-      setBusy(button, false)
-    }
-  }))
+  const user = await getCurrentUser(); if (!user) return location.href = `/auth/login/?next=${encodeURIComponent(location.pathname)}`
+  let data; try { data = await api(`/api/admin/${endpoint}`) } catch (e) { document.body.innerHTML = `<main class="pb-main"><h1 class="pb-display">Could not load the admin portal</h1><p>${escapeHtml(e.message)}</p><button class="pb-button" onclick="location.reload()">Try again</button></main>`; return }
+  let selectedId, filter = 'prepare'
+  const render = () => { const body = endpoint === 'workspace' ? workspace(data, selectedId, filter) : endpoint === 'products' ? products(data.products || []) : customers(data.customers || []); document.body.innerHTML = `<header class="pb-admin-header"><a class="pb-admin-brand" href="/admin/"><img src="/assets/petitbakery-logo.png" alt="PetitBakery"><span>PetitBakery<small>Bakery admin</small></span></a><nav><a href="/">Shop</a><a href="/admin/" ${endpoint === 'workspace' ? 'aria-current="page"' : ''}>Orders</a><a href="/admin/products/" ${endpoint === 'products' ? 'aria-current="page"' : ''}>Products</a><a href="/admin/customers/" ${endpoint === 'customers' ? 'aria-current="page"' : ''}>Customers</a></nav><a class="pb-admin-user" href="/account/">${escapeHtml(user.displayName)}<small>Bakery admin</small></a></header><main class="pb-admin-main">${body}</main>`; bind() }
+  const bind = () => { document.querySelectorAll('[data-open-order]').forEach(b => b.onclick = () => { selectedId = b.dataset.openOrder; render() }); document.querySelectorAll('[data-filter]').forEach(b => b.onclick = () => { filter = b.dataset.filter; selectedId = undefined; render() }); document.querySelector('[data-advance-order]')?.addEventListener('click', async e => { const b = e.currentTarget; setBusy(b, true); try { const { order } = await api(`/api/admin/orders/${encodeURIComponent(b.dataset.advanceOrder)}`, { method: 'PATCH', body: JSON.stringify({ shipping_status: b.dataset.shipping, status: b.dataset.status }) }); const index = data.orders.findIndex(o => o.id === order.id); data.orders[index] = { ...data.orders[index], ...order }; selectedId = order.id; render() } catch (error) { b.textContent = error.message; setBusy(b, false) } }); document.querySelectorAll('[data-product-id]').forEach(form => form.onsubmit = async e => { e.preventDefault(); const fields = Object.fromEntries(new FormData(form)), b = form.querySelector('button'); setBusy(b, true); try { await api(`/api/admin/products/${form.dataset.productId}`, { method: 'PATCH', body: JSON.stringify({ price_cents: Math.round(Number(fields.price) * 100), stock: Number(fields.stock) }) }); b.textContent = 'Saved' } catch (error) { b.textContent = error.message } finally { setBusy(b, false) } }) }
+  render()
 }
-
-load().catch((error) => {
-  document.body.innerHTML = `<main class="pb-main"><h1 class="pb-display">Admin page unavailable</h1><p role="alert">${escapeHtml(error.message)}</p><a class="pb-button" href="/">Back to shop</a></main>`
-})
+load().catch(e => { document.body.innerHTML = `<main class="pb-main"><h1 class="pb-display">Admin page unavailable</h1><p>${escapeHtml(e.message)}</p></main>` })

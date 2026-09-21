@@ -19,7 +19,7 @@ adminRoutes.get('/dashboard', async (c) => {
 adminRoutes.get('/products', async (c) => c.json({ products: await supabase(c, '/rest/v1/products?select=*&order=created_at.desc') }))
 adminRoutes.get('/workspace', async (c) => {
   const [orders, lowStock] = await Promise.all([
-    supabase(c, '/rest/v1/orders?select=*,profiles(email,display_name),payments(status,method,receipt_number)&order=created_at.desc&limit=200'),
+    supabase(c, '/rest/v1/orders?select=*,profiles(email,display_name),payments(status,receipt_number),order_items(product_name,unit_price_cents,quantity)&order=created_at.desc&limit=200'),
     supabase(c, '/rest/v1/products?stock=lt.5&select=id,name,stock&order=stock.asc')
   ])
   return c.json({ orders, lowStock })

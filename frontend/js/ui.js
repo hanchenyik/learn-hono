@@ -68,7 +68,7 @@ export async function renderShell() {
             <a href="/products/">Shop treats</a>
             <a href="/#faq-title">FAQ</a>
             ${user
-              ? `<a href="/account/">${escapeHtml(user.displayName)}</a>`
+              ? `<a href="/cart/">Cart</a><a href="/account/#orders">Orders</a><a href="/account/">${escapeHtml(user.displayName)}</a>`
               : `<a href="/auth/login/" class="pb-nav-login">Sign in</a>`}
           </nav>
         </div>

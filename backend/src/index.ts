@@ -4,6 +4,7 @@ import { secureHeaders } from 'hono/secure-headers'
 import type { AppEnv } from './types'
 import { productRoutes } from './routes/products'
 import { orderRoutes } from './routes/orders'
+import { profileRoutes } from './routes/profile'
 import { adminRoutes } from './routes/admin'
 import { HttpError } from './lib/http'
 
@@ -25,6 +26,7 @@ app.get('/health', (c) => c.json({ ok: true, service: 'petitbakery-api' }))
 
 app.route('/api/products', productRoutes)
 app.route('/api/orders', orderRoutes)
+app.route('/api/profile', profileRoutes)
 app.route('/api/admin', adminRoutes)
 
 app.notFound((c) => c.json({ error: 'Not found.' }, 404))

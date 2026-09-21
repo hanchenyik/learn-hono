@@ -3,11 +3,12 @@ import { escapeHtml, money, setBusy } from '../js/ui.js'
 
 const route = location.pathname.replace(/\/+$/, '').split('/').pop() || 'index'
 const page = (route === 'admin' ? 'index' : route).replace('admin_', '').replace('.html', '') || 'index'
-const endpoint = { index: 'dashboard', products: 'products', orders: 'orders', customers: 'customers', payments: 'payments', activity: 'activity', shipping: 'orders' }[page] || 'dashboard'
-const labels = { index: 'Bakery overview', products: 'Products', orders: 'Orders', customers: 'Customers', payments: 'Demo payments', activity: 'Admin activity', shipping: 'Shipping' }
+const endpoint = { products: 'products', customers: 'customers' }[page] || 'workspace'
+const labels = { index: 'Order workspace', products: 'Products', orders: 'Order workspace', customers: 'Customers', payments: 'Order workspace', activity: 'Order workspace', shipping: 'Order workspace' }
+if (endpoint === 'workspace' && page !== 'index') location.replace('/admin/')
 const orderStatuses = ['confirmed', 'processing', 'completed', 'cancelled']
 const shippingStatuses = ['pending', 'preparing', 'shipped', 'delivered', 'cancelled']
-const nav = () => ['index', 'products', 'orders', 'shipping', 'customers', 'payments', 'activity'].map((key) => `<a href="${key === 'index' ? '/admin/' : `/admin/${key}/`}" ${key === page ? 'aria-current="page" class="pb-button"' : ''}>${labels[key]}</a>`).join('')
+const nav = () => ['index', 'products', 'customers'].map((key) => `<a href="${key === 'index' ? '/admin/' : `/admin/${key}/`}" ${(key === page || (key === 'index' && endpoint === 'workspace')) ? 'aria-current="page" class="pb-button"' : ''}>${labels[key]}</a>`).join('')
 const empty = (what) => `<p class="pb-admin-empty">No ${what} yet.</p>`
 
 function format(value, key) {
@@ -51,6 +52,10 @@ function orderEditors(orders) {
     <div class="flex items-center gap-3"><button class="pb-button" type="submit">Save status</button><span data-form-status role="status" class="text-sm"></span></div>
   </form>`).join('')}</div>`
 }
+function workspace(data) {
+  const orders = data.orders || [], queue = (title, list) => `<section class="mt-6"><h2 class="text-xl font-bold">${title} <span class="text-sm text-[color:var(--pb-muted)]">${list.length}</span></h2>${orderEditors(list)}</section>`
+  return `${queue('Unpaid QR orders', orders.filter(o => o.payment_method === 'qr' && o.payment_status !== 'paid'))}${queue('Paid orders to prepare', orders.filter(o => o.payment_status === 'paid' && o.shipping_status === 'pending'))}${queue('In delivery', orders.filter(o => ['shipped','delivered'].includes(o.shipping_status)))}${queue('Refund cancellations', orders.filter(o => o.payment_status === 'refunded'))}<section class="mt-6"><h2 class="text-xl font-bold">Low stock</h2>${data.lowStock?.length ? data.lowStock.map(p => `<p class="mt-2 rounded-xl bg-orange-50 p-3">${escapeHtml(p.name)} — ${p.stock} left</p>`).join('') : '<p class="mt-2">All stocked up.</p>'}</section>`
+}
 
 async function load() {
   const user = await getCurrentUser()
@@ -67,12 +72,8 @@ async function load() {
     return
   }
 
-  const value = endpoint === 'dashboard' ? data : data[endpoint] || data.orders || []
-  const body = endpoint === 'dashboard'
-    ? `<div class="pb-admin-metrics">${Object.entries(data).map(([key, item]) => `<div><b>${escapeHtml(key === 'revenue' ? 'Demo order total' : key)}</b><strong>${key === 'revenue' ? money(item) : escapeHtml(item)}</strong></div>`).join('')}</div><p class="mt-4 text-sm text-[color:var(--pb-muted)]">Order totals are demo records; no money is collected or charged.</p><div class="mt-8 border-t border-[color:var(--pb-line)] pt-6"><h2 class="text-xl font-bold">Invite an admin</h2><p class="mt-1 text-sm text-[color:var(--pb-muted)]">Send an admin invitation to an email that does not already have an account.</p><form id="admin-invite-form" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end"><label class="flex-1 text-sm font-semibold">Email address<input name="email" type="email" required maxlength="254" autocomplete="email" class="pb-field mt-1 w-full"></label><button class="pb-button" type="submit">Invite admin</button><span id="admin-invite-status" role="status" class="text-sm"></span></form></div>`
-    : page === 'products' ? productEditors(value)
-      : page === 'orders' || page === 'shipping' ? orderEditors(value)
-        : readOnlyRows(value, page)
+  const value = data[endpoint] || data.orders || []
+  const body = endpoint === 'workspace' ? workspace(data) : page === 'products' ? productEditors(value) : readOnlyRows(value, page)
 
   document.body.innerHTML = `<header class="pb-shell"><div class="pb-nav"><a class="pb-brand" href="/"><span>PetitBakery</span></a><a href="/account/">${escapeHtml(user.displayName)}</a></div></header><main class="pb-main"><span class="pb-kicker">Back office</span><h1 class="pb-display" style="font-size:clamp(2.5rem,6vw,5rem)">${labels[page]}</h1><nav class="pb-admin-nav" aria-label="Admin">${nav()}</nav>${page === 'customers' || page === 'payments' || page === 'activity' ? '<p class="mb-4 text-sm text-[color:var(--pb-muted)]">Read-only records. Checkout is a demo and does not collect or charge payment.</p>' : ''}<section class="pb-admin-card" aria-label="${labels[page]}">${body}</section></main>`
 

@@ -28,10 +28,11 @@ function renderOrders(orders) {
     try {
       const { order, items } = await api(`/api/orders/${encodeURIComponent(button.dataset.orderId)}`)
       panel.dataset.loaded = 'true'
-      panel.innerHTML = `<div class="flex flex-wrap justify-between gap-2 text-sm"><p><span class="font-semibold">Order status:</span> ${escapeHtml(order.status)}</p><p><span class="font-semibold">Shipping:</span> ${escapeHtml(order.shipping_status || 'Pending')}</p></div>
+      panel.innerHTML = `<div class="flex flex-wrap justify-between gap-2 text-sm"><p><span class="font-semibold">Payment:</span> ${escapeHtml(order.payment_status || 'paid')}</p><p><span class="font-semibold">Fulfilment:</span> ${escapeHtml(order.shipping_status || 'Pending')}</p></div><ol class="mt-3 flex flex-wrap gap-2 text-xs"><li class="rounded-full bg-orange-100 px-2 py-1">${escapeHtml(order.payment_status || 'paid')}</li><li class="rounded-full bg-orange-100 px-2 py-1">${escapeHtml(order.shipping_status || 'pending')}</li>${order.refunded_at ? '<li class="rounded-full bg-orange-100 px-2 py-1">refunded</li>' : ''}</ol>
         <ul class="mt-4 divide-y divide-slate-200">${items.map((item) => `<li class="flex justify-between gap-4 py-3 text-sm"><span>${escapeHtml(item.product_name)} × ${item.quantity}</span><span>${money(item.unit_price_cents * item.quantity)}</span></li>`).join('')}</ul>
         <dl class="ml-auto mt-4 max-w-xs space-y-2 text-sm"><div class="flex justify-between"><dt>Subtotal</dt><dd>${money(order.subtotal_cents)}</dd></div><div class="flex justify-between"><dt>Shipping</dt><dd>${money(order.shipping_cents)}</dd></div><div class="flex justify-between"><dt>Tax</dt><dd>${money(order.tax_cents)}</dd></div><div class="flex justify-between border-t border-slate-200 pt-2 font-black"><dt>Total</dt><dd>${money(order.total_cents)}</dd></div></dl>
-        <p class="mt-4 text-sm text-slate-500">Shipping to ${escapeHtml([order.shipping_name, order.address1, order.address2, order.city, order.postal_code, order.country].filter(Boolean).join(', '))}</p>`
+        <p class="mt-4 text-sm text-slate-500">Shipping to ${escapeHtml([order.shipping_name, order.address1, order.address2, order.city, order.postal_code, order.country].filter(Boolean).join(', '))}</p>${!['shipped','delivered','cancelled'].includes(order.shipping_status) && order.status !== 'cancelled' ? `<button data-cancel class="mt-4 text-sm font-semibold text-red-700 underline">Cancel order${order.payment_status === 'paid' ? ' and refund' : ''}</button>` : ''}`
+      panel.querySelector('[data-cancel]')?.addEventListener('click', async () => { try { await api(`/api/orders/${encodeURIComponent(order.id)}/cancel`, { method: 'POST' }); delete panel.dataset.loaded; panel.classList.add('hidden'); button.click(); toast('Order cancelled.', 'success') } catch (error) { toast(error.message, 'error') } })
     } catch (error) {
       panel.innerHTML = `<p class="text-sm text-red-700">Could not load this order: ${escapeHtml(error.message)} <button type="button" data-retry class="font-semibold underline">Try again</button></p>`
       panel.querySelector('[data-retry]').addEventListener('click', () => { delete panel.dataset.loaded; panel.classList.add('hidden'); button.click() })
@@ -49,6 +50,9 @@ async function init() {
 
   document.getElementById('account-name').textContent = user.displayName
   document.getElementById('account-email').textContent = user.email
+  const { profile } = await api('/api/profile')
+  if (profile?.default_shipping) Object.entries(profile.default_shipping).forEach(([key, value]) => { const field = document.querySelector(`#address-form [name="${key}"]`); if (field) field.value = value })
+  document.getElementById('address-form').addEventListener('submit', async (event) => { event.preventDefault(); try { await api('/api/profile', { method: 'PATCH', body: JSON.stringify({ defaultShipping: Object.fromEntries(new FormData(event.currentTarget)) }) }); toast('Default address saved.', 'success') } catch (error) { toast(error.message, 'error') } })
   const { orders } = await api('/api/orders')
   renderOrders(orders)
 

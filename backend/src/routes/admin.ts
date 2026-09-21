@@ -17,6 +17,13 @@ adminRoutes.get('/dashboard', async (c) => {
   return c.json({ products: products.length, lowStock: products.filter((p: any) => p.stock < 5).length, orders: orders.length, revenue: orders.reduce((n: number, o: any) => n + o.total_cents, 0), customers: customers.length, payments: payments.length })
 })
 adminRoutes.get('/products', async (c) => c.json({ products: await supabase(c, '/rest/v1/products?select=*&order=created_at.desc') }))
+adminRoutes.get('/workspace', async (c) => {
+  const [orders, lowStock] = await Promise.all([
+    supabase(c, '/rest/v1/orders?select=*,profiles(email,display_name),payments(status,method,receipt_number)&order=created_at.desc&limit=200'),
+    supabase(c, '/rest/v1/products?stock=lt.5&select=id,name,stock&order=stock.asc')
+  ])
+  return c.json({ orders, lowStock })
+})
 adminRoutes.patch('/products/:id', async (c) => {
   const actor = await requireAdmin(c)
   const body = await readJson<Record<string, unknown>>(c)

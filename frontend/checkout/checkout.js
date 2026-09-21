@@ -3,72 +3,27 @@ import { clearCart, getCart, cartSubtotal } from '../js/cart-store.js'
 import { imageForCartItem } from '../js/product-images.js'
 import { escapeHtml, money, renderShell, setBusy, toast } from '../js/ui.js'
 
-async function init() {
-  await renderShell()
-  const user = await getCurrentUser()
-  const items = getCart()
-
-  if (!user) {
-    document.getElementById('checkout-root').innerHTML = `
-      <div class="rounded-3xl border border-slate-200 bg-white p-8 text-center">
-        <h2 class="text-2xl font-black">Sign in to finish checkout</h2>
-        <p class="mt-2 text-slate-500">Your cart stays in this browser.</p>
-        <a href="/auth/login/?next=/checkout/" class="mt-6 inline-block rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white">Sign in</a>
-      </div>`
+const pinToday = () => new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuala_Lumpur', day: '2-digit', month: '2-digit', year: '2-digit' }).format(new Date()).replaceAll('/', '')
+const payUrl = (token) => `${location.origin}/checkout/?scan=${encodeURIComponent(token)}`
+function showPayment(orderId, method, token, total) {
+  const root = document.querySelector('#checkout-root')
+  if (method === 'card') {
+    root.innerHTML = `<section class="rounded-3xl border border-orange-200 bg-white p-8"><p class="font-bold text-orange-700">3. Demo verification</p><h2 class="mt-2 text-3xl font-black">Confirm your card</h2><p class="mt-2 text-slate-600">Enter today’s six-digit demo PIN. It is checked only in this browser.</p><form id="pin-form" class="mt-6 max-w-sm"><label class="text-sm font-semibold">Demo PIN<input name="pin" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"></label><button class="mt-4 rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white">Confirm ${money(total)}</button></form></section>`
+    document.querySelector('#pin-form').onsubmit = async (e) => { e.preventDefault(); if (new FormData(e.currentTarget).get('pin') !== pinToday()) return toast('That is not today’s demo PIN.', 'error'); await api(`/api/orders/${orderId}/payment/card`, { method: 'POST' }); clearCart(); root.innerHTML = `<section class="rounded-3xl bg-emerald-50 p-8 text-center"><h2 class="text-3xl font-black">Paid successfully with ${money(total)}</h2><a class="mt-6 inline-block rounded-xl bg-slate-950 px-5 py-3 text-white" href="/account/">Done</a></section>` }
     return
   }
-
-  if (!items.length) {
-    location.href = '/cart/'
-    return
-  }
-
-  const subtotal = cartSubtotal()
-  const shipping = subtotal >= 8000 ? 0 : 799
-  const tax = Math.round(subtotal * 0.06)
-  document.getElementById('order-summary').innerHTML = `
-    <div class="rounded-3xl border border-slate-200 bg-white p-6">
-      <h2 class="font-black">Order summary</h2>
-      <div class="mt-4 space-y-4">
-        ${items.map((item) => `<div class="flex gap-3"><img src="${escapeHtml(imageForCartItem(item))}" class="h-14 w-14 rounded-lg object-cover" alt=""><div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold">${escapeHtml(item.name)}</p><p class="text-xs text-slate-500">Qty ${item.quantity}</p></div><p class="text-sm font-semibold">${money(item.priceCents * item.quantity)}</p></div>`).join('')}
-      </div>
-      <div class="my-5 border-t"></div>
-      <dl class="space-y-2 text-sm"><div class="flex justify-between"><dt>Subtotal</dt><dd>${money(subtotal)}</dd></div><div class="flex justify-between"><dt>Shipping</dt><dd>${shipping ? money(shipping) : 'Free'}</dd></div><div class="flex justify-between"><dt>Tax</dt><dd>${money(tax)}</dd></div></dl>
-      <div class="mt-4 flex justify-between text-lg font-black"><span>Total</span><span>${money(subtotal + shipping + tax)}</span></div>
-      <p class="mt-3 text-xs leading-5 text-slate-400">The server recalculates the final total from product IDs and quantities. No card data is collected.</p>
-    </div>`
-
-  const form = document.getElementById('checkout-form')
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    const button = form.querySelector('button[type="submit"]')
-    setBusy(button, true, 'Placing order…')
-
-    try {
-      const payload = Object.fromEntries(new FormData(form).entries())
-      payload.items = getCart().map((item) => ({ productId: item.productId, quantity: item.quantity }))
-
-      const data = await api('/api/orders', {
-        method: 'POST',
-        headers: { 'Idempotency-Key': crypto.randomUUID() },
-        body: JSON.stringify(payload)
-      })
-
-      clearCart()
-      document.getElementById('checkout-root').innerHTML = `
-        <div class="rounded-3xl border border-emerald-200 bg-emerald-50 p-8 text-center">
-          <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-600 text-2xl text-white">✓</div>
-          <h2 class="mt-5 text-3xl font-black text-slate-950">Demo order confirmed</h2>
-          <p class="mt-2 text-slate-600">This demo created an order and payment record. No card details were collected and no money was charged.</p>
-          <p class="mt-3 text-sm font-mono text-slate-500">Order ${escapeHtml(data.orderId)}</p>
-          <a href="/account/" class="mt-6 inline-block rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white">View orders</a>
-        </div>`
-    } catch (error) {
-      toast(error.message, 'error')
-    } finally {
-      setBusy(button, false)
-    }
-  })
+  const url = payUrl(token)
+  root.innerHTML = `<section class="rounded-3xl border border-orange-200 bg-white p-8 text-center"><p class="font-bold text-orange-700">3. QR payment</p><h2 class="mt-2 text-3xl font-black">Scan to pay ${money(total)}</h2><img class="mx-auto mt-5 h-52 w-52" alt="QR code for your one-time payment link" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(url)}"><p id="payment-state" class="mt-4 text-sm">Waiting for payment (up to 60 seconds)…</p></section>`
+  let ticks = 0; const timer = setInterval(async () => { ticks++; try { const { payment } = await api(`/api/orders/${orderId}/payment`); if (payment.payment_status === 'paid') { clearInterval(timer); clearCart(); root.innerHTML = `<section class="rounded-3xl bg-emerald-50 p-8 text-center"><h2 class="text-3xl font-black">Payment received</h2><a class="mt-6 inline-block rounded-xl bg-slate-950 px-5 py-3 text-white" href="/account/">Done</a></section>` } else if (payment.payment_status === 'not_paid' || ticks >= 6) { clearInterval(timer); document.querySelector('#payment-state').innerHTML = `Not paid. <button id="retry" class="font-bold underline">Pay again</button>`; document.querySelector('#retry').onclick = async () => { const next = await api(`/api/orders/${orderId}/payment/retry`, { method: 'POST' }); showPayment(orderId, 'qr', next.paymentToken, total) } } } catch (e) { clearInterval(timer); toast(e.message, 'error') } }, 10000)
 }
-
-init().catch((error) => toast(error.message, 'error'))
+async function init() {
+  await renderShell(); const token = new URLSearchParams(location.search).get('scan')
+  if (token) { const result = await api(`/api/orders/payment/scan/${encodeURIComponent(token)}`); document.querySelector('main').innerHTML = `<section class="mx-auto mt-16 max-w-lg rounded-3xl bg-emerald-50 p-8 text-center"><h1 class="text-3xl font-black">${result.status === 'paid' ? `Paid successfully with ${money(result.total)}` : 'Not paid'}</h1><a class="mt-6 inline-block rounded-xl bg-slate-950 px-5 py-3 text-white" href="/">Done</a></section>`; return }
+  const user = await getCurrentUser(), items = getCart(); if (!user) return location.href = '/auth/login/?next=/checkout/'; if (!items.length) return location.href = '/cart/'
+  const subtotal = cartSubtotal(), shipping = subtotal >= 8000 ? 0 : 799, tax = Math.round(subtotal * .06)
+  document.querySelector('#order-summary').innerHTML = `<div class="rounded-3xl border border-slate-200 bg-white p-6"><h2 class="font-black">Order summary</h2><div class="mt-4 space-y-3">${items.map(i => `<div class="flex gap-3"><img src="${escapeHtml(imageForCartItem(i))}" class="h-12 w-12 rounded-lg object-cover" alt=""><span class="flex-1 text-sm">${escapeHtml(i.name)} × ${i.quantity}</span><b>${money(i.priceCents * i.quantity)}</b></div>`).join('')}</div><div class="my-5 border-t"></div><div class="flex justify-between font-black"><span>Total</span><span>${money(subtotal + shipping + tax)}</span></div></div>`
+  const { profile } = await api('/api/profile'); if (profile?.default_shipping) Object.entries(profile.default_shipping).forEach(([key, value]) => { const el = document.querySelector(`[name="${key}"]`); if (el) el.value = value })
+  document.querySelectorAll('[name="paymentMethod"]').forEach(el => el.onchange = () => document.querySelector('#card-fields').classList.toggle('hidden', document.querySelector('[name="paymentMethod"]:checked').value !== 'card'))
+  const form = document.querySelector('#checkout-form'); form.onsubmit = async (e) => { e.preventDefault(); const button = form.querySelector('button'); setBusy(button, true, 'Creating order…'); try { const data = Object.fromEntries(new FormData(form)); data.items = getCart().map(i => ({ productId: i.productId, quantity: i.quantity })); data.saveAsDefault = form.elements.saveAsDefault.checked; const result = await api('/api/orders', { method: 'POST', headers: { 'Idempotency-Key': crypto.randomUUID() }, body: JSON.stringify(data) }); showPayment(result.orderId, data.paymentMethod, result.paymentToken, result.total) } catch (error) { toast(error.message, 'error') } finally { setBusy(button, false) } }
+}
+init().catch((e) => toast(e.message, 'error'))

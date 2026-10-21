@@ -1,6 +1,8 @@
-# PetitBakery — Cloudflare Pages + Hono Workers
+# Lumière — Cloudflare Pages + Hono Workers
 
-PetitBakery is a beginner-friendly bakery storefront you can run and study.
+Lumière is a storefront built with Cloudflare Pages, Hono Workers, D1, and Better Auth.
+
+The Lumière frontend design rules are in [Design.md](Design.md).
 
 ## Quick start: frontend + backend
 
@@ -20,10 +22,10 @@ npm run check
 npm run start
 ```
 
-Before starting, replace the `BETTER_AUTH_SECRET` and `RESEND_API_KEY`
+Before starting, replace the `BETTER_AUTH_SECRET` and `BREVO_API_KEY`
 placeholders in `.env` with your local values. `BETTER_AUTH_SECRET` must be at
-least 32 characters; use a real Resend API key if you want verification and
-password-reset emails to work.
+least 32 characters. Brevo must authorize the caller IP and verify `EMAIL_FROM`
+before verification and password-reset emails will work.
 
 Generate a fresh Better Auth secret with Node.js:
 
@@ -43,7 +45,7 @@ dependency-free so students can read them.
 
 ```bash
 npm run check:stage1  # HTML, CSS, responsive storefront
-npm run check:stage2  # D1 bakery seed, catalogue and cart
+npm run check:stage2  # D1 product seed, catalogue and cart
 npm run check:stage3  # Hono API, auth and trusted checkout
 npm run check:stage4  # Pages, Worker, D1 and security configuration
 ```
@@ -56,7 +58,7 @@ A beginner-friendly full e-commerce starter using:
 - **Frontend hosting:** Cloudflare Pages
 - **Backend:** Hono on Cloudflare Workers
 - **Database:** Cloudflare D1
-- **Email verification/password reset:** Resend Free adapter
+- **Email verification/password reset:** Brevo API
 - **CI/CD:** GitHub Actions validates first, then deploys the Worker and Pages frontend in separate jobs
 - **Payment:** intentionally omitted; checkout creates a dummy confirmed order
 
@@ -94,7 +96,7 @@ Hono API on Cloudflare Worker
   |
   +--> Cloudflare D1
   |
-  +--> Resend API (verification/reset email only)
+  +--> Brevo API (verification/reset email only)
 ```
 
 ## Security model
@@ -170,11 +172,11 @@ Verification and reset links use 256-bit random tokens. D1 stores only a SHA-256
 - bounded string lengths and cart quantities
 - idempotency key on checkout
 
-## Why Resend for email?
+## Email delivery
 
 As of August 2026, **Cloudflare Email Sending to arbitrary recipients requires Workers Paid**. Free accounts can send only to verified destination addresses, which is not sufficient for normal customer signups.
 
-This project uses **Pages + Workers + D1**, while using the **Resend Free plan** for verification/reset mail. The email adapter is isolated in `backend/src/lib/email.ts`, so you can replace it later with Cloudflare Email Service if you upgrade.
+The Worker sends verification and reset mail through Brevo. The sender address is configured with `EMAIL_FROM` in `backend/wrangler.jsonc` for production and `.env` locally.
 
 ## Tailwind CDN note
 
@@ -195,7 +197,7 @@ Tailwind documents this CDN as **development-only, not intended for production**
 - Node.js 22+ (CI uses Node 22)
 - Cloudflare account
 - Wrangler authenticated locally
-- Resend account for real email
+- Brevo account with a verified sender for real email
 
 ## 2. Install backend dependencies
 
@@ -207,7 +209,7 @@ npm install
 ## 3. Create D1 database
 
 ```bash
-npx wrangler d1 create petitbakery-db
+npx wrangler d1 create lumiere-db
 ```
 
 Copy the returned database ID into:
@@ -229,7 +231,7 @@ Migration `0002_seed_products.sql` is applied automatically by Wrangler migratio
 
 Set the local Worker values in the repository-root `.env` file.
 
-Authentication uses the live `RESEND_API_KEY` from `.env`.
+Authentication email uses the `BREVO_API_KEY` from `.env`.
 
 ## 6. Start Worker
 
@@ -269,7 +271,7 @@ http://localhost:8788
 This repository uses **Direct Upload** from GitHub Actions. Two workflow files keep the deploy targets separate: `deploy-backend.yml` publishes the Hono Worker and applies D1 migrations, while `deploy-frontend.yml` uploads only `frontend/` to Pages.
 
 ```bash
-npx wrangler pages project create petitbakery --production-branch main
+npx wrangler pages project create lumiere-bpk --production-branch main
 ```
 
 Choose `main` as production branch.
@@ -278,22 +280,23 @@ Choose `main` as production branch.
 
 ```bash
 cd backend
-npx wrangler d1 create petitbakery-db
+npx wrangler d1 create lumiere-db
 ```
 
 Put the ID in `backend/wrangler.jsonc` and commit the file.
 
-## 3. Configure Resend
+## 3. Configure Brevo
 
-Create/verify your sending domain in Resend.
+Verify your sending address or domain in Brevo.
 
 Recommended:
 
 ```text
-EMAIL_FROM = PetitBakery <noreply@mail.yourdomain.com>
+EMAIL_FROM = dehoulworker@gmail.com
 ```
 
-Store the Resend API key only as GitHub secret `RESEND_API_KEY`.
+Store the Brevo API key as GitHub secret `BREVO_API_KEY` for deployment. GitHub
+does not allow downloading existing Actions secret values into a local `.env`.
 
 ## 5. Create a least-privilege Cloudflare API token
 
@@ -321,18 +324,18 @@ This repository uses:
 CLOUDFLARE_API_TOKEN
 CLOUDFLARE_ACCOUNT_ID
 BETTER_AUTH_SECRET
-RESEND_API_KEY
+BREVO_API_KEY
 ```
 
 The backend deploy job writes the two runtime secrets to the Worker. The frontend deploy job needs only the Cloudflare token and account ID; it does not receive application secrets.
 
-## 7. GitHub Actions variables
+## 7. Production origins
 
 The production origins are committed in `backend/wrangler.jsonc` and `frontend/js/config.js`:
 
 ```text
-APP_ORIGIN=https://petitbakery.pages.dev
-PUBLIC_API_BASE=https://petitbakery-api.velozz.workers.dev
+APP_ORIGIN=https://lumiere-bpk-cba.pages.dev
+PUBLIC_API_BASE=https://lumiere-api.velozz.workers.dev
 ```
 
 For stronger cookie/CSP ergonomics, use a custom domain:
@@ -351,9 +354,15 @@ The two workflows run independently:
 1. `deploy-backend.yml` runs `test-backend`, then validates secrets, applies D1 migrations and deploys `backend/` to Workers.
 2. `deploy-frontend.yml` runs `test-frontend`, then deploys only `frontend/` to Cloudflare Pages.
 
-Pull requests run the relevant test job only; pushes to `main` and manual runs deploy that workflow’s target.
+Pull requests run the relevant test job only. Deployment jobs on `main` remain
+disabled until the repository variable `ENABLE_LUMIERE_DEPLOY` is set to `true`.
+Before enabling it, verify the Cloudflare token/account, `lumiere-db` ID,
+`lumiere-bpk` Pages project, Worker URL, Brevo sender and egress IP policy, and
+add the `BETTER_AUTH_SECRET` and `BREVO_API_KEY` repository secrets.
 
-Cloudflare credentials remain in GitHub secrets. The hosted storefront and catalogue require no Worker runtime secrets; enabling account registration or transactional email later requires an explicit secret policy.
+Cloudflare credentials, the Better Auth secret, and the Brevo key belong in
+GitHub secrets. Worker authentication and transactional email need both runtime
+secrets after deployment.
 
 ---
 
@@ -362,21 +371,32 @@ Cloudflare credentials remain in GitHub secrets. The hosted storefront and catal
 ```text
 GET    /health
 
-POST   /api/auth/register
-POST   /api/auth/resend-verification
-POST   /api/auth/verify-email
-POST   /api/auth/login
-GET    /api/auth/me
-POST   /api/auth/logout
-POST   /api/auth/forgot-password
+POST   /api/auth/sign-up/email
+POST   /api/auth/send-verification-email
+GET    /api/auth/verify-email
+POST   /api/auth/sign-in/email
+GET    /api/auth/get-session
+POST   /api/auth/sign-out
+POST   /api/auth/request-password-reset
 POST   /api/auth/reset-password
+POST   /api/auth/change-password
+POST   /api/auth/two-factor/{enable,send-otp,verify-otp,disable}
 
 GET    /api/products
 GET    /api/products/:id
+GET    /api/products/admin/all             (admin)
+POST   /api/products                       (admin)
+PATCH  /api/products/:id                   (admin)
+
+GET    /api/user/wishlist                  (signed in)
+POST   /api/user/wishlist/:id              (signed in)
+DELETE /api/user/wishlist/:id              (signed in)
 
 POST   /api/orders
 GET    /api/orders
 GET    /api/orders/:id
+GET    /api/orders/all                     (admin)
+PATCH  /api/orders/:id/shipping            (admin)
 ```
 
 # Project structure

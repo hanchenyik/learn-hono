@@ -12,28 +12,31 @@ const required = async (file, needles) => {
 const pass = (message) => console.log(`✓ ${message}`)
 
 try {
-  await required('frontend/index.html', ['PetitBakery', 'pb-hero', 'pb-category-grid', 'pb-product-grid', 'pb-faq', '/products/'])
-  await required('frontend/styles.css', ['--pb-cream', '.pb-hero', '.pb-product-grid'])
-  for (const route of ['products', 'product', 'cart', 'checkout', 'login', 'register', 'account', 'verify', 'verification', 'resend-verification', 'forgot-password', 'reset-password']) await required(`frontend/${route}/index.html`, ['PetitBakery'])
-  await required('frontend/assets/images/petitbakery-hero-cake.png', [])
-  await required('frontend/assets/images/petitbakery-logo.png', [])
-  await required('frontend/js/ui.js', ['petitbakery-logo.png', 'pb-float-cart', 'Add to cart', 'pb-nav-login'])
-  await required('frontend/js/product-images.js', ['prod_strawberry_cloud', 'prod_caramel_bonbon', '/assets/images/products/'])
-  await required('frontend/js/catalog-fallback.js', ['prod_strawberry_cloud', 'prod_caramel_bonbon', 'fallbackProducts'])
-  for (const image of ['strawberry-cloud', 'chocolate-fudge', 'lemon-tart', 'butter-croissant', 'strawberry-danish', 'cinnamon-roll', 'sea-salt-cookie', 'brown-butter-cookie', 'pistachio-cookie', 'truffle-box', 'dark-bark', 'caramel-bonbon']) await required(`frontend/assets/images/products/${image}.png`, [])
-  for (const image of ['category-cake-cutout', 'category-croissant-cutout', 'category-cookie-cutout', 'category-truffle-cutout']) await required(`frontend/assets/images/products/${image}.png`, [])
-  await required('.env.example', ['BETTER_AUTH_SECRET', 'RESEND_API_KEY', 'CLOUDFLARE_API_TOKEN'])
-  pass('PetitBakery storefront shell is present')
+  await required('Design.md', ['# Lumière frontend design', '--color-canvas', '.lumiere-btn'])
+  await required('frontend/styles.css', ['--color-canvas', '.lumiere-btn', '.lumiere-panel'])
+  for (const route of ['', 'products/', 'product/', 'cart/', 'checkout/', 'login/', 'register/', 'account/', 'account/details/', 'account/saved/', 'account/security/', 'admin/', 'admin/order/', 'authenticate/', 'card-payment/', 'contact/', 'faq/', 'forgot-password/', 'payment/', 'privacy/', 'receipt/', 'resend-verification/', 'reset-password/', 'terms/', 'verification/', 'verify/']) {
+    await required(`frontend/${route}index.html`, ['LUMIÈRE', '/styles.css', 'site-header'])
+  }
+  await required('frontend/mock-pay/index.html', ['LUMIÈRE', '/styles.css', '/js/mock-pay.js'])
+  await required('frontend/payment-success/index.html', ['LUMIÈRE', '/styles.css', '/js/payment-success.js'])
+  await required('frontend/assets/images/lumiere-hero-bag.png', [])
+  await required('frontend/js/ui.js', ['LUMIÈRE', 'Mobile navigation', 'data-cart-count'])
+  await required('frontend/js/product-images.js', ['prod_lv_neverfull', 'prod_bvlgari_bzero1', '/assets/images/products/'])
+  await required('frontend/js/api.js', ['credentials: \'include\'', 'Request failed'])
+  for (const image of ['lv-neverfull', 'dior-lady', 'chanel-flap', 'hermes-birkin', 'rolex-submariner', 'rolex-datejust', 'cartier-tank', 'apm-meteorites', 'cartier-love', 'vca-alhambra', 'tiffany-smile', 'bvlgari-bzero1']) await required(`frontend/assets/images/products/${image}.png`, [])
+  for (const image of ['category-bag-cutout', 'category-watch-cutout', 'category-bangle-cutout', 'category-necklace-cutout']) await required(`frontend/assets/images/products/${image}.png`, [])
+  await required('.env.example', ['BETTER_AUTH_SECRET', 'BREVO_API_KEY', 'CLOUDFLARE_API_TOKEN'])
+  pass('Lumière storefront shell is present')
 
   if (!stage || stage >= 2) {
-    await required('backend/migrations/0002_seed_products.sql', ['Cakes', 'Pastries', 'Cookies', 'Chocolates'])
-    await required('frontend/js/home.js', ['/api/products'])
+    await required('backend/migrations/0002_seed_products.sql', ['Bags', 'Watches', 'Bangles', 'Necklaces'])
+    await required('frontend/js/home.js', ['renderShell'])
     await required('frontend/js/products.js', ['/api/products', 'category'])
-    pass('Bakery catalogue and cart entry points are present')
+    pass('Lumière catalogue and cart entry points are present')
   }
   if (!stage || stage >= 3) {
     await required('backend/src/index.ts', ['/api/auth', '/api/products', '/api/orders'])
-    await required('backend/src/lib/auth.ts', ['betterAuth', 'BETTER_AUTH_SECRET', 'BETTER_AUTH_URL', "sameSite: 'none'", 'sendVerificationEmail', 'sendResetPassword'])
+    await required('backend/src/lib/auth.ts', ['betterAuth', 'BETTER_AUTH_SECRET', 'BETTER_AUTH_URL', "sameSite: isProd ? 'none' : 'lax'", 'sendVerificationEmail', 'sendResetPassword'])
     await required('backend/src/routes/orders.ts', ['price_cents', 'Idempotency-Key', 'requireUser', "Origin') !== c.env.CORS_ORIGIN"])
     await required('backend/migrations/0003_better_auth_cutover.sql', ['CREATE TABLE "user"', 'CREATE TABLE session', 'CREATE TABLE account', 'CREATE TABLE verification', 'REFERENCES "user"', 'legacy_users', 'legacy_orders'])
     await required('backend/migrations/0004_reset_catalog.sql', ['DROP TABLE IF EXISTS order_items', 'DROP TABLE IF EXISTS orders', 'CREATE TABLE "user"', 'DROP TABLE IF EXISTS legacy_users'])
@@ -45,15 +48,15 @@ try {
     pass('Hono routes and trusted checkout checks are present')
   }
   if (!stage || stage >= 4) {
-    await required('backend/wrangler.jsonc', ['petitbakery-api', 'petitbakery-db', 'd1_databases', 'onboarding@resend.dev'])
-    await required('.github/workflows/deploy-backend.yml', ['test-backend:', 'deploy-backend:', 'needs: test-backend', 'CLOUDFLARE_API_TOKEN', 'BETTER_AUTH_SECRET', 'RESEND_API_KEY', 'npm run deploy --prefix backend'])
+    await required('backend/wrangler.jsonc', ['lumiere-api', 'lumiere-db', 'd1_databases', 'dehoulworker@gmail.com'])
+    await required('.github/workflows/deploy-backend.yml', ['test-backend:', 'deploy-backend:', 'needs: test-backend', 'CLOUDFLARE_API_TOKEN', 'BETTER_AUTH_SECRET', 'BREVO_API_KEY', 'ENABLE_LUMIERE_DEPLOY', 'npm run deploy --prefix backend'])
     await required('.github/workflows/deploy-frontend.yml', ['test-frontend:', 'deploy-frontend:', 'needs: test-frontend', 'CLOUDFLARE_API_TOKEN', 'wrangler pages deploy frontend'])
     await required('frontend/_headers', ['Content-Security-Policy', 'frame-ancestors'])
     await required('README.md', ['Cloudflare Pages', 'Cloudflare deployment', 'deploy-backend', 'deploy-frontend', 'products/index.html'])
     await required('ARCHITECTURE.md', ['deploy-backend', 'deploy-frontend', 'Each deploy job requires'])
     pass('Cloudflare deployment configuration is present')
   }
-  console.log(stage ? `Stage ${stage} ready.` : 'All PetitBakery checks passed.')
+  console.log(stage ? `Stage ${stage} ready.` : 'All Lumière checks passed.')
 } catch (error) {
   console.error(`✗ ${error.message}`)
   process.exit(1)

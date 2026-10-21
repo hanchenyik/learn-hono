@@ -14,7 +14,7 @@ if ($null -eq $npm) {
   throw 'npm.cmd was not found on PATH.'
 }
 Write-Host "Using npm: $($npm.Source)"
-
+  
 & $npm.Source --prefix backend run db:migrate:local
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 

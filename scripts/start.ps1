@@ -28,7 +28,7 @@ try {
 
   while (-not $backend.HasExited -and -not $frontend.HasExited) {
     Start-Sleep -Seconds 1
-  }
+  } 
 }
 finally {
   foreach ($process in @($backend, $frontend)) {

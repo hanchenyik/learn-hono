@@ -7,16 +7,16 @@
     "enabled": true
   },
   "vars": {
-    "APP_ORIGIN": "https://lumiere-bpk-cba.pages.dev",
-    "CORS_ORIGIN": "https://lumiere-bpk-cba.pages.dev",
-    "BETTER_AUTH_URL": "https://lumiere-api.velozz.workers.dev/api/auth",
-    "EMAIL_FROM": "dehoulworker@gmail.com"
+    "APP_ORIGIN": "https://lumiere-bpk-5al.pages.dev",
+    "CORS_ORIGIN": "https://lumiere-bpk-5al.pages.dev",
+    "BETTER_AUTH_URL": "https://lumiere-api.hanchenyik.workers.dev/api/auth",
+    "EMAIL_FROM": "p23015011@student.newinti.edu.my"
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "lumiere-db",
-      "database_id": "aa518f92-aebf-4dcd-868b-ec7d78072fc8"
+      "database_id": "8781b74b-183f-4bb3-8392-9037312bafa9"
     }
   ]
   

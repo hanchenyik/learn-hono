@@ -9,7 +9,7 @@ The Lumière frontend design rules are in [Design.md](Design.md).
 ```bash
 node -e "require('node:fs').copyFileSync('.env.example', '.env')"
 npm install --prefix backend
-npm run check
+npm test
 npm run start
 ```
 
@@ -18,7 +18,7 @@ From PowerShell, use:
 ```powershell
 Copy-Item .env.example .env
 npm install --prefix backend
-npm run check
+npm test
 npm run start
 ```
 
@@ -38,16 +38,11 @@ node -e "const fs=require('node:fs'),crypto=require('node:crypto'),p='.env'; let
 Open `http://localhost:8788` in your browser and stop both servers with
 `Ctrl-C`.
 
-## Rebuild in four milestones
-
-Run the check after each milestone. The checks are intentionally small and
-dependency-free so students can read them.
+## Tests
 
 ```bash
-npm run check:stage1  # HTML, CSS, responsive storefront
-npm run check:stage2  # D1 product seed, catalogue and cart
-npm run check:stage3  # Hono API, auth and trusted checkout
-npm run check:stage4  # Pages, Worker, D1 and security configuration
+npm test
+npm test --prefix backend
 ```
 
 The architecture notes in `ARCHITECTURE.md` explain the browser, Pages, Worker and D1 boundaries.
@@ -347,15 +342,17 @@ PUBLIC_API_BASE=https://api.example.com
 
 Then replace the broad `https://*.workers.dev` entry in `frontend/_headers` with your exact API origin.
 
-## 8. Push to `main`
+## 8. Open a pull request or push to `main`
 
 The two workflows run independently:
 
 1. `deploy-backend.yml` runs `test-backend`, then validates secrets, applies D1 migrations and deploys `backend/` to Workers.
 2. `deploy-frontend.yml` runs `test-frontend`, then deploys only `frontend/` to Cloudflare Pages.
 
-Pull requests run the relevant test job only. Deployment jobs on `main` remain
-disabled until the repository variable `ENABLE_LUMIERE_DEPLOY` is set to `true`.
+Pull requests from this repository and pushes to `main` deploy after their test
+jobs pass. Forked pull requests run tests only because GitHub does not provide
+repository secrets to them. Deployment jobs remain disabled until the repository
+variable `ENABLE_LUMIERE_DEPLOY` is set to `true`.
 Before enabling it, verify the Cloudflare token/account, `lumiere-db` ID,
 `lumiere-bpk` Pages project, Worker URL, Brevo sender and egress IP policy, and
 add the `BETTER_AUTH_SECRET` and `BREVO_API_KEY` repository secrets.
